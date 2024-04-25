@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Page d'erreur</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <div class="alert alert-danger p-3">
+        <h3>Erreur survenue</h3>
+        <p th:text="${errorMessage}"></p>
+    </div>
+</div>
+</body>
+</html>

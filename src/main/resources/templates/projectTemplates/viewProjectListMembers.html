@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des membres</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <div class="my-5">
+        <div class="navbar navbar-light bg-light mt-5">
+            <div class="container-fluid">
+                <h3 class="navbar-brand">Liste des membres</h3>
+                <form class="d-inline-flex">
+                    <input class="form-control me-2" type="search" placeholder="Prénom, nom ou spécialité"
+                           aria-label="Search">
+                    <button class="btn btn-outline-primary" type="submit">chercher</button>
+                </form>
+                <div class="d-flex">
+                    <button class="btn btn-outline-success" type="submit"><i class="bi bi-plus-lg"></i>Nouveau
+                        membre
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-hover border border-secondary">
+            <thead>
+            <tr>
+                <th scope="col">Prenom & Nom</th>
+                <th scope="col">Spécialité</th>
+                <th scope="col">Téléphone</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Singou Dembele</td>
+                <td>Developpeur</td>
+                <td>0623536922</td>
+                <td>
+                    <a class="btn btn-danger" th:href="@{/#}">
+                        <i class="bi bi-dash-circle"></i>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>Singou Dembele</td>
+                <td>Developpeur</td>
+                <td>0623536922</td>
+                <td>
+                    <a class="btn btn-danger" th:href="@{/#}">
+                        <i class="bi bi-dash-circle"></i>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>Singou Dembele</td>
+                <td>Developpeur</td>
+                <td>0623536922</td>
+                <td>
+                    <a class="btn btn-danger" th:href="@{/#}">
+                        <i class="bi bi-dash-circle"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

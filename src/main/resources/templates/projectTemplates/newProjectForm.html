@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouveau projet</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Nouveau projet</li>
+        </ol>
+    </nav>
+    <div>
+        <div class="container d-flex flex-column my-3">
+            <div class="card shadow rounded-3 border border-success">
+                <div class="card-header p-3 h4">
+                    Nouveau projet
+                </div>
+                <div class="card-body p-4">
+                    <form class="row" id="myForm" th:action="@{/enregistrerNouveauProjet}" th:method="post">
+                        <div class="form-group col-lg-3">
+                            <label class="form-control-label" for="form-group-input1">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="form-group-input1" name="title" th:value="${newProjectDTO.title}">
+                            <span class="text-danger" th:errors="${newProjectDTO.title}"></span>
+                        </div>
+                        <div class="form-group col-lg-3">
+                            <label class="form-control-label" for="startDate">Date de début <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="startDate" name="startDate" th:value="${newProjectDTO.startDate}">
+                            <span class="text-danger" th:errors="${newProjectDTO.startDate}"></span>
+                        </div>
+                        <div class="form-group col-lg-3">
+                            <label class="form-control-label" for="endDate">Date de fin <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="endDate" name="endDate" th:value="${newProjectDTO.endDate}">
+                            <span class="text-danger" th:errors="${newProjectDTO.endDate}"></span>
+                        </div>
+                        <div class="form-group col-lg-3">
+                            <label class="form-control-label" for="specificNote">Note spécifique</label>
+                            <input type="text" class="form-control" id="specificNote" name="specificNote" th:value="${newProjectDTO.specificNote}">
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label class="form-control-label" for="description">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="6" th:field="${newProjectDTO.description}"></textarea>
+                            <span class="text-danger" th:errors="${newProjectDTO.description}"></span>
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <button class="btn btn-success float-end m-2" title="Ajouter"><i class="bi bi-floppy"></i> Ajouter</button>
+                            <button class="btn btn-outline-danger float-end m-2" onclick="resetForm()" title="Annuler l'ajout"> <i class="bi bi-x-square"></i> Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+        function resetForm() {
+            document.getElementById("myForm").reset();
+        }
+    </script>
+</body>
+</html>

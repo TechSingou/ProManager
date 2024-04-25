@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <title>Inscription avec succès</title>
+</head>
+<body>
+<div class="container col-md-6 offset-3 mt-5">
+    <div class="alert alert-info p-4">
+        <h3>Inscription recu !!</h3>
+        <p> Votre compte n'est pas encore actif, merci de demander l'activation à un admin</p>
+        <div class="float-end m-3">
+            <a class="btn text-primary" th:href="@{/formLogin}">Se connecter?</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

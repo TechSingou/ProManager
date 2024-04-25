@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail collaborateur</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/employes}">Employés</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Détail collaborateur</li>
+        </ol>
+    </nav>
+    <div style="width:30%;" class="bg-info rounded-circle">
+    </div>
+</div>
+</body>
+</html>

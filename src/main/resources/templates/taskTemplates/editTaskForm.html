@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Mise à jour de la tâche</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}" th:text="${projectName}"></a>
+            </li>
+            <li class="breadcrumb-item"><a th:href="@{/getProjectTasks(projectId=${projectId},projectName=${projectName})}">Liste
+                des tâches</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewTask(taskId=${editTaskDTO.id})}" th:text="${editTaskDTO.title}"></a></li>
+            <li class="breadcrumb-item active" aria-current="page">Mise à jour</li>
+        </ol>
+    </nav>
+    <div>
+        <div class="container d-flex flex-column my-3">
+            <div class="card shadow rounded-3 border border-warning">
+                <div class="card-header p-3 h4">
+                    Mise à jour de la tâche
+                </div>
+                <div class="card-body p-4">
+                    <form class="row" id="myForm" th:action="@{/updateTask}" th:method="post">
+                        <input type="hidden" name="id" th:value="${editTaskDTO.id}">
+                        <input type="hidden" name="projectId" th:value="${editTaskDTO.projectId}">
+                        <input type="hidden" name="state" th:value="${editTaskDTO.state}">
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="form-group-input1">Nom <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="form-group-input1" name="title"
+                                   th:value="${editTaskDTO.title}">
+                            <span class="text-danger" th:errors="${editTaskDTO.title}"></span>
+                        </div>
+                        <div class="form-group col-lg-12 mb-3">
+                            <label class="form-control-label" for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="6"
+                                      th:field="${editTaskDTO.description}"></textarea>
+                            <span class="text-danger" th:errors="${editTaskDTO.description}"></span>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="responsableId" class="form-label">Responsable</label>
+                            <select th:value="${editTaskDTO.responsableId}" class="form-select" id="responsableId"
+                                    name="responsableId">
+                                <option value="">-||-</option>
+                                <option value="1">Employe1</option>
+                                <option value="2">Employe2</option>
+                                <option value="3">Employe3</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="priority" class="form-label">Priorité <span class="text-danger">*</span></label>
+                            <select th:value="${editTaskDTO.priority}" class="form-select" id="priority" name="priority">
+                                <option value="FAIBLE" th:selected="${editTaskDTO.priority == 'FAIBLE'}">FAIBLE</option>
+                                <option value="MOYEN" th:selected="${editTaskDTO.priority == 'MOYEN'}">MOYEN</option>
+                                <option value="ELEVE" th:selected="${editTaskDTO.priority == 'ELEVE'}">ELEVE</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="criticality" class="form-label">Criticité <span
+                                    class="text-danger">*</span></label>
+                            <select th:value="${editTaskDTO.criticality}" class="form-select" id="criticality"
+                                    name="criticality">
+                                <option value="MINEURE" th:selected="${editTaskDTO.criticality == 'MINEURE'}">MINEURE
+                                </option>
+                                <option value="MAJEURE" th:selected="${editTaskDTO.criticality == 'MAJEURE'}">MAJEURE
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="statut" class="form-label">Statut <span
+                                    class="text-danger">*</span></label>
+                            <select th:value="${editTaskDTO.statut}" class="form-select" id="statut"
+                                    name="statut">
+                                <option value="ATTENTE" th:selected="${editTaskDTO.statut == 'ATTENTE'}">ATTENTE
+                                </option>
+                                <option value="EN_COURS" th:selected="${editTaskDTO.statut == 'EN_COURS'}">EN COURS
+                                </option>
+                                <option value="TERMINE" th:selected="${editTaskDTO.statut == 'TERMINE'}">TERMINE
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="startDate">Date de début <span
+                                    class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="startDate" name="startDate"
+                                   th:value="${editTaskDTO.startDate}">
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="endDate">Date de fin <span
+                                    class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="endDate" name="endDate"
+                                   th:value="${editTaskDTO.endDate}">
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <button class="btn btn-warning float-end m-2" title="Enregistrer les modifications" onclick="javascript:return confirm('Voulez-vous sauvegarder les changements?')"><i
+                                    class="bi bi-floppy"></i>
+                                Enreg. Modif
+                            </button>
+                            <button class="btn btn-outline-danger float-end m-2" onclick="resetForm()"
+                                    title="Annuler mise à jour"><i class="bi bi-x-square"></i> Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

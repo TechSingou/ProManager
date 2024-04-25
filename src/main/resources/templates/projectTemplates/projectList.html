@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des projets</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Projets</li>
+        </ol>
+    </nav>
+    <div class="mt-5">
+        <div class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <h3 class="navbar-brand">Liste des projets</h3>
+                <form class="d-inline-flex" th:action="@{/projets}">
+                    <input class="form-control me-2" type="search" placeholder="chercher par désignation"
+                           aria-label="Search" name="keyword" th:value="${currentKeyword}">
+                    <button class="btn btn-outline-primary" type="submit">chercher</button>
+                </form>
+                <div class="d-flex">
+                    <a class="btn btn-outline-success" th:href="@{/nouveauProjetForm}"><i class="bi bi-plus-lg"></i>Nouveau
+                        projet</a>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Désignation</th>
+                <th scope="col">Date de début</th>
+                <th scope="col">Date de Fin</th>
+                <th scope="col">Statut</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="project:${projectList}">
+                <td>
+                    <a th:href="@{/viewProject(projectId=${project.id})}" th:text="${project.title}"></a>
+                </td>
+                <td th:text="${project.startDate}"></td>
+                <td th:text="${project.endDate}"></td>
+                <td th:text="${project.statut}"></td>
+                <td>
+                    <a th:href="@{/viewProject(projectId=${project.id})}"> voir plus...</a>
+                </td>
+                <td>
+                    <a class="btn btn-danger" th:href="@{/deleteProject(projectId=${project.id}, keyword=${currentKeyword})}"
+                       onclick="javascript:return confirm('Êtes-vous sûre?')">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <ul class="nav nav-pills">
+            <li th:each="page,status:${pages}">
+                <a th:href="@{/projets(keyword=${currentKeyword}, page=${status.index})}"
+                   th:class="${(currentPage == status.index)?'btn btn-info ms-1':'btn btn-outline-info ms-1'}"
+                   th:text="${1+status.index}"></a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

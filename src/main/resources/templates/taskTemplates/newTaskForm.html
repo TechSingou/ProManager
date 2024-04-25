@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle tâche</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
+                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item active" aria-current="page">Nouvelle tâche</li>
+        </ol>
+    </nav>
+    <div>
+        <div class="container d-flex flex-column my-3">
+            <div class="card shadow rounded-3 border border-success">
+                <div class="card-header p-3 h4">
+                    Nouvelle tâche
+                </div>
+                <div class="card-body p-4">
+                    <form class="row" id="myForm" th:action="@{/enregistrerNouvelleTache}" th:method="post">
+                        <input type="hidden" name="projectId" th:value="${projectId}">
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="form-group-input1">Nom <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="form-group-input1" name="title"
+                                   th:value="${newTaskDTO.title}">
+                            <span class="text-danger" th:errors="${newTaskDTO.title}"></span>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="responsableId" class="form-label">Responsable</label>
+                            <select th:value="${newTaskDTO.responsableId}" class="form-select" id="responsableId"
+                                    name="responsableId">
+                                <option value="">-||-</option>
+                                <option value="1">Employe1</option>
+                                <option value="2">Employe2</option>
+                                <option value="3">Employe3</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="priority" class="form-label">Priorité <span class="text-danger">*</span></label>
+                            <select th:value="${newTaskDTO.priority}" class="form-select" id="priority" name="priority">
+                                <option th:selected="${newTaskDTO.priority == 'FAIBLE'}" value="FAIBLE">FAIBLE</option>
+                                <option th:selected="${newTaskDTO.priority == 'MOYEN'}" value="MOYEN">MOYEN</option>
+                                <option th:selected="${newTaskDTO.priority == 'ELEVE'}" value="ELEVE">ELEVE</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label for="criticality" class="form-label">Criticité <span
+                                    class="text-danger">*</span></label>
+                            <select th:value="${newTaskDTO.criticality}" class="form-select" id="criticality"
+                                    name="criticality">
+                                <option th:selected="${newTaskDTO.criticality == 'MINEURE'}" value="MINEURE">MINEURE</option>
+                                <option th:selected="${newTaskDTO.criticality == 'MAJEURE'}" value="MAJEURE">MAJEURE</option>
+                                .
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="startDate">Date de début <span
+                                    class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="startDate" name="startDate"
+                                   th:value="${newTaskDTO.startDate}">
+                            <span class="text-danger" th:errors="${newTaskDTO.startDate}"></span>
+                        </div>
+                        <div class="form-group col-lg-4 mb-3">
+                            <label class="form-control-label" for="endDate">Date de fin <span
+                                    class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="endDate" name="endDate"
+                                   th:value="${newTaskDTO.endDate}">
+                            <span class="text-danger" th:errors="${newTaskDTO.endDate}"></span>
+                        </div>
+                        <div class="form-group col-lg-12 mb-3">
+                            <label class="form-control-label" for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="6"
+                                      th:field="${newTaskDTO.description}"></textarea>
+                            <span class="text-danger" th:errors="${newTaskDTO.description}"></span>
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <button class="btn btn-success float-end m-2" title="Ajouter"><i class="bi bi-floppy"></i>
+                                Ajouter
+                            </button>
+                            <button class="btn btn-outline-danger float-end m-2" onclick="resetForm()"
+                                    title="Annuler l'ajout"><i class="bi bi-x-square"></i> Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+        function resetForm() {
+            document.getElementById("myForm").reset();
+        }
+</script>
+</body>
+</html>

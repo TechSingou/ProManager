@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des tâches</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
+                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item" aria-current="page">Liste des tâches</li>
+        </ol>
+    </nav>
+    <div class="my-5">
+        <div class="navbar navbar-light bg-light mt-5">
+            <div class="container-fluid">
+                <h3 class="navbar-brand">Liste des tâches</h3>
+                <form class="d-inline-flex">
+                    <input class="form-control me-2" type="search" placeholder="statut ou désignation"
+                           aria-label="Search">
+                    <button class="btn btn-outline-primary" type="submit">chercher</button>
+                </form>
+                <!-- newTaskFrom(projectId=${project.id},projectName=${project.title})} -->
+                <div class="d-flex">
+                    <a class="btn btn-outline-success"
+                       th:href="@{/newTaskFrom(projectId=${projectId},projectName=${projectName})}">
+                        <i class="bi bi-plus-lg"></i>Nouvelle tâche
+                    </a>
+                </div>
+            </div>
+        </div>
+        <table class="table table-hover border border-secondary">
+            <thead>
+            <tr>
+                <th scope="col">Désignation</th>
+                <th scope="col">Date de création</th>
+                <th scope="col">Date d'affection</th>
+                <th scope="col">Date de début</th>
+                <th scope="col">Date de fin</th>
+                <th scope="col">Affectée à</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Priorité</th>
+                <th scope="col">Criticité</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task:${taskListPage}">
+                <td><a th:href="@{/viewTask(taskId=${task.id})}" th:text="${task.title}"></a></td>
+                <td th:text="${task.creationDate}"></td>
+                <td th:text="${task.affectationDate}"></td>
+                <td th:text="${task.startDate}"></td>
+                <td th:text="${task.endDate}"></td>
+                <td></td>
+                <td th:text="${task.statut}"></td>
+                <td th:text="${task.priority}"></td>
+                <td th:text="${task.criticality}"></td>
+                <td>
+                    <a class="btn btn-danger" th:href="@{/deleteTask(taskId=${task.id},projectId=${projectId},projectName=${projectName})}" onclick="javascript:return confirm('Êtes-vous sûre?')">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

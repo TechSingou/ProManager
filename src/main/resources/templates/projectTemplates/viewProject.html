@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail du projet</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><span th:text="${project.title}"></span></li>
+        </ol>
+    </nav>
+    <div class="mt-5">
+        <div class="d-inline-flex">
+            <h4>Détail du projet <span th:text="${project.title}"></span></h4>
+            <pre class="m-2"> >> <span th:text="${project.statut}" class="text-danger"></span> << </pre>
+        </div>
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <small class="navbar-brand">Info Spécifique : <em th:text="${ project.specificNote}"></em></small>
+                <div class="d-flex">
+                    <a class="btn btn-warning m-2" th:href="@{/editerProjetForm(projectId=${project.id})}">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a class="btn btn-danger m-2" th:href="@{/deleteProject(projectId=${project.id})}"
+                       onclick="javascript:return confirm('Êtes-vous sûre?')">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <div class="my-5 container-fluid">
+            <h6>Description :</h6>
+            <div th:text="${project.description}"></div>
+        </div>
+       <a class="btn btn-outline-primary" th:href="@{/getProjectTasks(projectId=${project.id},projectName=${project.title})}"><i class="fs-4 bi-list-check"></i> Liste de tâches</a>
+        <button class="btn btn-outline-success"><i class="fs-4 bi-people"></i> Liste de membres</button>
+        <button class="btn btn-outline-secondary"><i class="fs-4 bi-graph-up"></i> Statistiques du projet</button>
+    </div>
+
+</div>
+</body>
+</html>

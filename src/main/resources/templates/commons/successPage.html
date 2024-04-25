@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Opération reçue</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <h3 class="alert alert-success p-3">Projet ajouté avec <strong>succès</strong></h3>
+    <div class="col-lg-12">
+        <a th:href="@{/viewProject(projectId=${project.id})}" class="btn btn-secondary float-center m-2" title="détail"><i
+                class="bi bi-eye"></i>
+            voir le projet</a>
+        <a th:href="@{/nouveauProjetForm}" class="btn btn-secondary float-center m-2" title="Nouveau projet"><i
+                class="bi bi-arrow-counterclockwise"></i> Recommencer</a>
+    </div>
+</div>
+</body>
+</html>

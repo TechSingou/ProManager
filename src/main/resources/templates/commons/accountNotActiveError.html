@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Page d'erreur</title>
+</head>
+<body>
+<div class="container col-md-6 offset-3">
+    <div class="alert alert-info p-4">
+        <h3>Compte non actif</h3>
+        <p th:text="${errorMessage}"></p>
+    </div>
+</div>
+</body>
+</html>

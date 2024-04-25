@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail de la tâche</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
+                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/getProjectTasks(projectId=${projectId},projectName=${projectName})}">Liste des
+                tâches</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="${task.title}"></li>
+        </ol>
+    </nav>
+    <div class="mt-5">
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <h4 th:text="${task.title}"></h4>
+                <div class="d-flex">
+                    <span th:if="${submitAllowed}"><a
+                            class="btn btn-secondary m-2" type="button" title="Soumettre"
+                            th:href="@{/submitTask(taskId=${task.id})}"
+                            onclick="javascript:return confirm('Êtes-vous sûre de soumettre?')">Soumettre</a></span>
+                    <a class="btn btn-secondary m-2" type="button" title="Modifier"
+                       th:href="@{/editTaskFrom(taskId=${task.id})}">Modifier</a>
+                    <button class="btn btn-secondary m-2" type="button" title="Evaluer" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop">Evaluer
+                    </button>
+                    <button class="btn btn-secondary m-2" type="button" title="Résoudre" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop1">Résoudre</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Modal evaluer -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form th:action="@{/evaluateTask(taskId=${task.id})}" th:method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Evaluation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <div class="form-group mb-3">
+                                <label class="form-control-label" for="form-group-input1">Note</label>
+                                <input type="text" class="form-control" id="form-group-input1" name="taskEvaluation"
+                                       th:value="${task.taskEvaluation}">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-control-label" for="form-group-input-app">Appréciation</label>
+                                <input type="text" class="form-control" id="form-group-input-app" name="mark"
+                                       th:value="${task.mark}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Evaluer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Resoudre -->
+        <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form th:action="@{/solveTask(taskId=${task.id})}" th:method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel1">Proposition de résolution</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label class="form-control-label" for="form-group-input2">Motif</label>
+                                <select class="form-select" id="form-group-input2" name="proposition">
+                                    <option value="CLOTURE">Cloturer</option>
+                                    <option value="RENVOI">Renvoyer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Résoudre</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="d-flex align-items-start">
+            <div class="m-2">
+                <button class="btn btn-outline-success" type="button" title="Statut" th:text="${task.statut}"></button>
+                <br>
+                <small><em>Statut</em></small>
+            </div>
+            <div class="m-2">
+                <button class="btn btn-outline-warning" type="button" title="Priorité"
+                        th:text="${task.priority}"></button>
+                <br>
+                <small><em>Priorité</em></small>
+            </div>
+            <div class="m-2">
+                <button class="btn btn-outline-danger" type="button" title="Criticité"
+                        th:text="${task.criticality}"></button>
+                <br>
+                <small><em>Criticité</em></small>
+            </div>
+            <div class="m-2">
+                <button class="btn btn-outline-secondary" type="button" title="Etat"
+                        th:text="${task.state}"></button>
+                <br>
+                <small><em>Etat</em></small>
+            </div>
+        </div>
+        <div class="my-5 container-fluid">
+            <h6>Description :</h6>
+            <div th:text="${task.description}"></div>
+        </div>
+        <div class="container-fluid my-5">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="fs-5"><span class="fw-bold">Auteur : </span> <span
+                            class="text-muted">Manager 1</span>
+                    </div>
+                    <div class="fs-5"><span class="fw-bold">Responsable : </span>
+                        <span class="text-muted">Employe 1</span>
+                    </div>
+                    <div class="fs-5"><span class="fw-bold">Date de création : </span>
+                        <span class="text-muted" th:text="${task.creationDate}"></span>
+                    </div>
+                    <div class="fs-5"><span class="fw-bold">Date d'affectation : </span>
+                        <span class="text-muted" th:text="${task.affectationDate}"></span>
+                    </div>
+                    <div class="fs-5"><span class="fw-bold">Date de début : </span>
+                        <span class="text-muted" th:text="${task.startDate}"></span>
+                    </div>
+                    <div class="fs-5"><span class="fw-bold">Date de fin : </span>
+                        <span class="text-muted" th:text="${task.endDate}"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="display-6 text-info">Evaluation</h6>
+                    <div class="fs-5 my-2"><span class="fw-bold">Note : </span><span
+                            th:text="${task.taskEvaluation}"></span></div>
+                    <span class="text-danger" th:errors="${evaluateTaskDTO.taskEvaluation}"></span>
+                    <div class="fs-5 my-2"><span class="fw-bold">Appréciation : </span><span
+                            th:text="${task.mark}"></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <h3 class=" text-center">Commentaires</h3>
+            <div class="messaging">
+                <div class="inbox_msg">
+                    <div class="mesgs">
+                        <div class="type_msg">
+                            <div class="input_msg_write">
+                                <input type="text" class="write_msg" placeholder="Type a message"/>
+                                <button class="msg_send_btn" type="button"><i class="bi bi-send"></i></button>
+                            </div>
+                        </div>
+                        <div class="msg_history">
+                            <div class="incoming_msg">
+                                <div class="incoming_msg_img"><img
+                                        src="https://ptetutorials.com/images/user-profile.png"
+                                        alt="sunil"></div>
+                                <div class="received_msg">
+                                    <div class="received_withd_msg">
+                                        <p>Test which is a new approach to have all
+                                            solutions</p>
+                                        <span class="time_date"> 11:01 AM    |    June 9</span></div>
+                                </div>
+                            </div>
+                            <div class="outgoing_msg">
+                                <div class="sent_msg">
+                                    <p>Test which is a new approach to have all
+                                        solutions</p>
+                                    <span class="time_date"> 11:01 AM    |    June 9</span></div>
+                            </div>
+                            <div class="incoming_msg">
+                                <div class="incoming_msg_img"><img
+                                        src="https://ptetutorials.com/images/user-profile.png"
+                                        alt="sunil"></div>
+                                <div class="received_msg">
+                                    <div class="received_withd_msg">
+                                        <p>Test, which is a new approach to have</p>
+                                        <span class="time_date"> 11:01 AM    |    Yesterday</span></div>
+                                </div>
+                            </div>
+                            <div class="outgoing_msg">
+                                <div class="sent_msg">
+                                    <p>Apollo University, Delhi, India Test</p>
+                                    <span class="time_date"> 11:01 AM    |    Today</span></div>
+                            </div>
+                            <div class="incoming_msg">
+                                <div class="incoming_msg_img"><img
+                                        src="https://ptetutorials.com/images/user-profile.png"
+                                        alt="sunil"></div>
+                                <div class="received_msg">
+                                    <div class="received_withd_msg">
+                                        <p>We work directly with our designers and suppliers,
+                                            and sell direct to you, which means quality, exclusive
+                                            products, at a price anyone can afford.</p>
+                                        <span class="time_date"> 11:01 AM    |    Today</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

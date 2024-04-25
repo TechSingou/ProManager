@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des tâches</title>
+</head>
+<body>
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tâches</li>
+        </ol>
+    </nav>
+    <div class="mt-5">
+        <div class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <h3 class="navbar-brand">List des tâches</h3>
+                <form class="d-inline-flex" th:action="@{/tasks}">
+                    <input class="form-control me-2" type="search" placeholder="chercher par désignation"
+                           aria-label="Search" name="keyword" th:value="${currentKeyword}">
+                    <button class="btn btn-outline-primary" type="submit">chercher</button>
+                </form>
+            </div>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Désignation</th>
+                <th scope="col">Date d'affection</th>
+                <th scope="col">Date de début</th>
+                <th scope="col">Date de fin</th>
+                <th scope="col">Affectée à</th>
+                <th scope="col">Etat</th>
+                <th scope="col">Priorité</th>
+                <th scope="col">Criticité</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task:${taskListPage}">
+                <td><a th:href="@{/viewTask(taskId=${task.id})}" th:text="${task.title}"></a></td>
+                <td th:text="${task.affectationDate}"></td>
+                <td th:text="${task.startDate}"></td>
+                <td th:text="${task.endDate}"></td>
+                <td></td>
+                <td th:text="${task.state}"></td>
+                <td th:text="${task.priority}"></td>
+                <td th:text="${task.criticality}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <ul class="nav nav-pills">
+            <li th:each="page,status:${pages}">
+                <a th:href="@{/tasks(keyword=${currentKeyword}, page=${status.index})}"
+                   th:class="${(currentPage == status.index)?'btn btn-info ms-1':'btn btn-outline-info ms-1'}"
+                   th:text="${1+status.index}"></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+</body>
+</html>
