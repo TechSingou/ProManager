@@ -12,8 +12,9 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
-                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"
+                    th:text="${projectName}"></a></li>
             <li class="breadcrumb-item" aria-current="page">Liste des tâches</li>
         </ol>
     </nav>
@@ -57,12 +58,17 @@
                 <td th:text="${task.affectationDate}"></td>
                 <td th:text="${task.startDate}"></td>
                 <td th:text="${task.endDate}"></td>
-                <td></td>
+                <td>
+                    <!--<a th:if="${responsable != null}" th:href="@{/viewEmployee(employeeId=${responsableEmail})}" th:text="${responsable}"></a>
+                    <a th:unless="${responsable != null}">&#45;&#45;</a>-->
+                </td>
                 <td th:text="${task.statut}"></td>
                 <td th:text="${task.priority}"></td>
                 <td th:text="${task.criticality}"></td>
                 <td>
-                    <a class="btn btn-danger" th:href="@{/deleteTask(taskId=${task.id},projectId=${projectId},projectName=${projectName})}" onclick="javascript:return confirm('Êtes-vous sûre?')">
+                    <a class="btn btn-danger"
+                       th:href="@{/deleteTask(taskId=${task.id},projectId=${projectId},projectName=${projectName})}"
+                       onclick="javascript:return confirm('Êtes-vous sûre?')">
                         <i class="bi bi-trash3"></i>
                     </a>
                 </td>

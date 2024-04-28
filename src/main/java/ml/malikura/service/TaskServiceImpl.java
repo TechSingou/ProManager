@@ -45,7 +45,7 @@ public class TaskServiceImpl implements TaskService {
             ProjectEntity findProject = projectService.getProject(newTaskDTO.getProjectId()).get();
             EmployeEntity responsable = null;
             if (newTaskDTO.getResponsableId() != null) {
-                //responsable = employeService.getEmploye(newTaskDTO.getResponsableId());
+                responsable = employeService.loadEmployeByEmail(newTaskDTO.getResponsableId());
                 newTaskDTO.setAffectationDate(LocalDateTime.now());
             }
             newTask = ValueMapper.convertToEntity(newTaskDTO);

@@ -8,6 +8,7 @@ import ml.malikura.util.ProjectStatut;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "PROJECTS")
 @Data
@@ -27,9 +28,8 @@ public class ProjectEntity {
     @Enumerated(EnumType.STRING)
     private ProjectStatut statut;
 
-    @OneToMany
-    @JoinColumn(name = "project_id")
-    private List<EmployeEntity> members;
+    @ManyToMany
+    private Set<EmployeEntity> members;
 
     @OneToMany(mappedBy = "project")
     private List<TaskEntity> tasks;

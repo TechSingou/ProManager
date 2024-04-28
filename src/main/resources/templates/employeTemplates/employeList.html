@@ -71,7 +71,8 @@
                     </span>
                     <span th:unless="${#authentication.principal.username == employee.email}">
                          <a class="btn btn-success" th:if="${employee.accountEnabled == false}"
-                            th:href="@{/getActivateAccountForm(email=${employee.email},keyword=${keyword},page=${currentPage})}">Activer</a>
+                            th:href="@{/getActivateAccountForm(email=${employee.email},keyword=${keyword},page=${currentPage},
+                            name=${employee.name},firstname=${employee.firstname})}">Activer</a>
                     <a class="btn btn-danger"
                        th:href="@{/employeeAccountDisactivate(email=${employee.email},keyword=${keyword},page=${currentPage})}"
                        th:if="${employee.accountEnabled == true}"

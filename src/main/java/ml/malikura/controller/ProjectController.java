@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.EditProjectDTO;
 import ml.malikura.dto.NewProjectDTO;
+import ml.malikura.entity.EmployeEntity;
 import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
+import ml.malikura.service.EmployeService;
 import ml.malikura.service.ProjectService;
 import ml.malikura.util.ValueMapper;
 import org.springframework.data.domain.Page;
@@ -19,12 +21,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @AllArgsConstructor
 @Slf4j
 public class ProjectController {
-    ProjectService projectService;
+    private ProjectService projectService;
+    //private EmployeService employeService;
 
     @GetMapping("/projets")
     @PreAuthorize("hasRole('USER')")
@@ -65,8 +69,8 @@ public class ProjectController {
     }
 
     @GetMapping("/viewProject")
-    @PreAuthorize("hasRole('USER')")
-    public String viewProject(Model model, @RequestParam(value = "projectId") Long projectId) {
+    @PreAuthorize("hasRole('MANAGER') OR @projectServiceImpl.isMemberOfProject(#email,#projectId)")
+    public String viewProject(Model model, @RequestParam(value = "projectId") Long projectId, @RequestParam(value = "email") String email) {
         log.info("ProjectController::viewProject execution started");
 
         ProjectEntity project = projectService.getProject(projectId).get();
@@ -124,4 +128,36 @@ public class ProjectController {
 
         return "redirect:/projets?keyword=" + keyword + "&page=" + page;
     }
+
+    @GetMapping("/viewProjectMembersList")
+    @PreAuthorize("hasRole('MANAGER')")
+    public String viewProjectMembersList(Model model, @RequestParam(value = "projectId") Long projectId,
+                                         @RequestParam(value = "projectName") String projectName) {
+        log.info("EmployeController::viewProjectMembersList execution started.");
+        // Members list
+        Set<EmployeEntity> employeesMembersOfProject = projectService.getMembersList(projectId);
+        // Mot members list
+        Set<EmployeEntity> notMembersList = projectService.getNotMembersList(projectId);
+        model.addAttribute("membersList", employeesMembersOfProject);
+        model.addAttribute("notMembersList", notMembersList);
+        model.addAttribute("projectName", projectName);
+        model.addAttribute("projectId", projectId);
+
+        log.info("EmployeController::viewProjectMembersList execution ended.");
+        return "projectTemplates/viewProjectListMembers";
+    }
+
+    @PostMapping("/addNewMember")
+    @PreAuthorize("hasRole('MANAGER')")
+    public String addNewMemberToProject(@RequestParam(value = "projectId") Long projectId,
+                                        @RequestParam(value = "projectName") String projectName, @RequestParam(value = "email") String email) {
+        log.info("EmployeController::addNewMemberToProject execution started.");
+
+        projectService.addNewEmployeToProject(email, projectId);
+
+        log.info("EmployeController::addNewMemberToProject execution ended.");
+        return "redirect:/viewProjectMembersList?projectId=" + projectId + "&projectName=" + projectName;
+    }
+
+    //Retirer le membre du projet
 }

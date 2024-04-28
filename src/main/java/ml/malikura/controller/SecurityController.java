@@ -55,6 +55,10 @@ public class SecurityController {
 
     @PostMapping("/inscriptionProcess")
     public String inscriptionProcess(Model model, @Valid NewEmployeDTO newEmployeDTO, BindingResult bindingResult) {
+        // Check if password and passwordConfirmation match
+        if (!newEmployeDTO.getPassword().equals(newEmployeDTO.getPasswordConfirmation())) {
+            bindingResult.rejectValue("passwordConfirmation", "error.password.notMatch", "Les mots de passe ne correspondent pas.");
+        }
         if (bindingResult.hasErrors())
             return "commons/inscription";
         EmployeEntity employeEntity = this.employeService.addNewEmploye(newEmployeDTO);

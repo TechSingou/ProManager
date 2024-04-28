@@ -27,7 +27,7 @@
             </ul>
             <span class="d-flex">
                     <span class="m-2"><i class="fs-4 bi-person-circle"></i> <br> <small
-                            th:text="${#authentication.principal.username}"></small></span>
+                            th:text="${#authorization.expression('hasRole(''MANAGER'')') ? (#authorization.expression('hasRole(''ADMIN'')') ? 'Admin' : 'Manager') : 'User'}"></small></span>
                     <a th:href="@{/logout}" class="m-2"><i class="fs-4 bi-power text-danger"
                                                            onclick="javascript:return confirm('Vous allez être deconnecté')"></i></a>
                 </span>
@@ -36,7 +36,7 @@
 </nav>
 <div class="container-fluid">
     <div class="row flex-nowrap">
-        <div class="col-auto col-md-2 col-xl-2 px-sm-2 px-0 bg-light">
+        <div class="col-auto col-md-2 col-xl-2 px-sm-2 px-0" style="background-color: #e3f2fd;">
             <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
                 <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
                     id="menu">

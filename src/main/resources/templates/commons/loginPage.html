@@ -23,16 +23,16 @@
     <div class="card-body p-4">
         <form th:action="@{/login}" method="post">
             <div class="row mb-3">
-                <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
-                <div class="col-sm-10">
-                    <input type="email" class="form-control" id="inputEmail" aria-label="email" name="username">
+                <label for="inputEmail" class="col-sm-4 col-form-label">Email</label>
+                <div class="col-sm-8">
+                    <input type="email" class="form-control" id="inputEmail" aria-label="email" name="username" required>
                 </div>
             </div>
             <div class="row mb-3">
                 <label for="inputPassword" class="col-sm-4 col-form-label">Mot de passe</label>
                 <div class="col-sm-8">
                     <input type="password" class="form-control" id="inputPassword" aria-label="password"
-                           name="password">
+                           name="password" required>
                 </div>
             </div>
             <div class="d-grid gap-2">

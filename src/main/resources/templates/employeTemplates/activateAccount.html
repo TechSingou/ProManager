@@ -15,15 +15,20 @@
             <li class="breadcrumb-item active" aria-current="page">Activation de compte</li>
         </ol>
     </nav>
-    <div class="col-md-6 offset-3">
+    <div class="col-md-6 offset-3 mt-5 border border-info-subtle card p-3 rounded">
         <form th:action="@{/employeeAccountActivate}" th:method="post">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel1">Activation de compte</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header mb-3">
+                <div>
+                    <h5 class="modal-title" id="staticBackdropLabel1">Activation de compte </h5>
+                    <small><span th:text="${firstname}" class="m-1"></span><span th:text="${name}"></span> &gt; <span
+                            th:text="${email}"></span> </small>
+                </div>
             </div>
             <input type="hidden" th:value="${email}" name="email">
             <input type="hidden" th:value="${keyword}" name="keyword">
             <input type="hidden" th:value="${currentPage}" name="page">
+            <input type="hidden" th:value="${name}" name="name">
+            <input type="hidden" th:value="${firstname}" name="firstname">
             <div class="modal-body">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="USER" name="roles">
@@ -38,10 +43,10 @@
                     <label class="form-check-label" for="inlineCheckbox3">Administrateur</label>
                 </div>
             </div>
-            <span class="text-danger" th:text="${errorRole}"></span>
+            <span class="text-danger" th:errors="${accountActivationDTO.roles}"></span>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-primary">Activer</button>
+                <a type="button" class="btn btn-secondary m-1" th:href="@{/employes}">Annuler</a>
+                <button type="submit" class="btn btn-primary  m-1">Activer</button>
             </div>
         </form>
     </div>

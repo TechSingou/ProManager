@@ -8,6 +8,16 @@
 </head>
 <body>
 <div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"
+                    th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item" aria-current="page">Liste des membres</li>
+        </ol>
+    </nav>
     <div class="my-5">
         <div class="navbar navbar-light bg-light mt-5">
             <div class="container-fluid">
@@ -18,13 +28,12 @@
                     <button class="btn btn-outline-primary" type="submit">chercher</button>
                 </form>
                 <div class="d-flex">
-                    <button class="btn btn-outline-success" type="submit"><i class="bi bi-plus-lg"></i>Nouveau
-                        membre
+                    <button class="btn btn-outline-success" type="submit" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdropNewMember"><i class="bi bi-plus-lg"></i>Nouveau membre
                     </button>
                 </div>
             </div>
         </div>
-
         <table class="table table-hover border border-secondary">
             <thead>
             <tr>
@@ -35,39 +44,53 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>Singou Dembele</td>
-                <td>Developpeur</td>
-                <td>0623536922</td>
+            <tr th:each="em:${membersList}">
                 <td>
-                    <a class="btn btn-danger" th:href="@{/#}">
-                        <i class="bi bi-dash-circle"></i>
-                    </a>
+                    <a th:href="@{/viewEmployee(employeeId=${em.email})}" th:text="${em.firstname +' '+em.name}"></a>
                 </td>
-            </tr>
-            <tr>
-                <td>Singou Dembele</td>
-                <td>Developpeur</td>
-                <td>0623536922</td>
+                <td th:text="${em.jobTitle}"></td>
+                <td th:text="${em.telephone}"></td>
                 <td>
-                    <a class="btn btn-danger" th:href="@{/#}">
-                        <i class="bi bi-dash-circle"></i>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>Singou Dembele</td>
-                <td>Developpeur</td>
-                <td>0623536922</td>
-                <td>
-                    <a class="btn btn-danger" th:href="@{/#}">
-                        <i class="bi bi-dash-circle"></i>
+                    <a class="btn btn-danger" th:href="@{/#}"
+                       onclick="javascript:return confirm('les tâches assignés pour ce projet seront rétirer aussi. Êtes_vous sure?')">
+                        retirer
                     </a>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
+
+    <!-- Modal evaluer -->
+    <div class="modal fade" id="staticBackdropNewMember" data-bs-backdrop="static" data-bs-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="@{/addNewMember(projectId=${projectId},projectName=${projectName})}" th:method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Ajout d'un nouveau membre</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label class="form-control-label" for="form-group-input2">Membre à ajouter</label>
+                            <select class="form-select" id="form-group-input2" name="email">
+                                <option th:each="notEm : ${notMembersList}" th:value="${notEm.email}"
+                                        th:text="${notEm.name + ' ' + notEm.firstname}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 </body>
 </html>

@@ -12,8 +12,9 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
-                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"
+                    th:text="${projectName}"></a></li>
             <li class="breadcrumb-item active" aria-current="page">Nouvelle tâche</li>
         </ol>
     </nav>
@@ -38,9 +39,9 @@
                             <select th:value="${newTaskDTO.responsableId}" class="form-select" id="responsableId"
                                     name="responsableId">
                                 <option value="">-||-</option>
-                                <option value="1">Employe1</option>
-                                <option value="2">Employe2</option>
-                                <option value="3">Employe3</option>
+                                <option th:each="member : ${membersOfProject}" th:value="${member.email}"
+                                        th:text="${member.firstname + ' ' + member.name}">
+                                </option>
                             </select>
                         </div>
                         <div class="form-group col-lg-4 mb-3">
@@ -56,8 +57,10 @@
                                     class="text-danger">*</span></label>
                             <select th:value="${newTaskDTO.criticality}" class="form-select" id="criticality"
                                     name="criticality">
-                                <option th:selected="${newTaskDTO.criticality == 'MINEURE'}" value="MINEURE">MINEURE</option>
-                                <option th:selected="${newTaskDTO.criticality == 'MAJEURE'}" value="MAJEURE">MAJEURE</option>
+                                <option th:selected="${newTaskDTO.criticality == 'MINEURE'}" value="MINEURE">MINEURE
+                                </option>
+                                <option th:selected="${newTaskDTO.criticality == 'MAJEURE'}" value="MAJEURE">MAJEURE
+                                </option>
                                 .
                             </select>
                         </div>
@@ -100,6 +103,7 @@
         function resetForm() {
             document.getElementById("myForm").reset();
         }
+
 </script>
 </body>
 </html>

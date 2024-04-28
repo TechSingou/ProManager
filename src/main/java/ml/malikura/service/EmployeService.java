@@ -23,5 +23,7 @@ public interface EmployeService {
 
     void disabledAccount(String email);
 
-    public Page<EmployeEntity> getEmployeesList(String keyword, int page, int size);
+    Page<EmployeEntity> getEmployeesList(String keyword, int page, int size);
+
+    List<EmployeEntity> getAll();
 }

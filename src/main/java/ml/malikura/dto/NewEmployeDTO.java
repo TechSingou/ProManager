@@ -39,8 +39,8 @@ public class NewEmployeDTO {
     private String address;
     private String telephone;
 
-    @AssertTrue(message = "Le mot de passe et la confirmation doivent correspondre")
-    public boolean isPasswordConfirmed() {
-        return password != null && password.equals(passwordConfirmation);
-    }
+   // @AssertTrue(message = "Le mot de passe et la confirmation doivent correspondre")
+    //public boolean isPasswordConfirmed() {
+      //  return password != null && password.equals(passwordConfirmation);
+    //}
 }

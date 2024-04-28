@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.NewEmployeDTO;
 import ml.malikura.entity.EmployeEntity;
+import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.RoleEmploye;
 import ml.malikura.exception.ProjectServiceBusinessException;
 import ml.malikura.repository.EmployeRepository;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -25,7 +28,6 @@ import java.util.List;
 public class EmployeServiceImpl implements EmployeService {
     private EmployeRepository employeRepository;
     private RoleEmployeRepository roleEmployeRepository;
-
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -124,4 +126,8 @@ public class EmployeServiceImpl implements EmployeService {
         return employeEntities;
     }
 
+    @Override
+    public List<EmployeEntity> getAll() {
+        return employeRepository.findAll();
+    }
 }

@@ -35,7 +35,8 @@
                             data-bs-target="#staticBackdrop">Evaluer
                     </button>
                     <button class="btn btn-secondary m-2" type="button" title="Résoudre" data-bs-toggle="modal"
-                            data-bs-target="#staticBackdrop1">Résoudre</button>
+                            data-bs-target="#staticBackdrop1">Résoudre
+                    </button>
                 </div>
             </div>
         </nav>
@@ -101,7 +102,6 @@
         </div>
 
 
-
         <div class="d-flex align-items-start">
             <div class="m-2">
                 <button class="btn btn-outline-success" type="button" title="Statut" th:text="${task.statut}"></button>
@@ -137,14 +137,16 @@
                     <div class="fs-5"><span class="fw-bold">Auteur : </span> <span
                             class="text-muted">Manager 1</span>
                     </div>
-                    <div class="fs-5"><span class="fw-bold">Responsable : </span>
-                        <span class="text-muted">Employe 1</span>
+                    <div class="fs-5"><span class="fw-bold">Affectée : </span>
+                        <span th:if="${responsable != null}" class="text-muted" th:text="${responsable}"></span>
+                        <span th:unless="${responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de création : </span>
                         <span class="text-muted" th:text="${task.creationDate}"></span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date d'affectation : </span>
-                        <span class="text-muted" th:text="${task.affectationDate}"></span>
+                        <span th:if="${responsable != null}" class="text-muted" th:text="${task.affectationDate}"></span>
+                        <span th:unless="${responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de début : </span>
                         <span class="text-muted" th:text="${task.startDate}"></span>

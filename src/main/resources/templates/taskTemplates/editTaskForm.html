@@ -12,11 +12,15 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}" th:text="${projectName}"></a>
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
+                                           th:text="${projectName}"></a>
             </li>
-            <li class="breadcrumb-item"><a th:href="@{/getProjectTasks(projectId=${projectId},projectName=${projectName})}">Liste
+            <li class="breadcrumb-item"><a
+                    th:href="@{/getProjectTasks(projectId=${projectId},projectName=${projectName})}">Liste
                 des tâches</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewTask(taskId=${editTaskDTO.id})}" th:text="${editTaskDTO.title}"></a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/viewTask(taskId=${editTaskDTO.id},email=${#authentication.name})}"
+                    th:text="${editTaskDTO.title}"></a></li>
             <li class="breadcrumb-item active" aria-current="page">Mise à jour</li>
         </ol>
     </nav>
@@ -56,7 +60,8 @@
                         </div>
                         <div class="form-group col-lg-4 mb-3">
                             <label for="priority" class="form-label">Priorité <span class="text-danger">*</span></label>
-                            <select th:value="${editTaskDTO.priority}" class="form-select" id="priority" name="priority">
+                            <select th:value="${editTaskDTO.priority}" class="form-select" id="priority"
+                                    name="priority">
                                 <option value="FAIBLE" th:selected="${editTaskDTO.priority == 'FAIBLE'}">FAIBLE</option>
                                 <option value="MOYEN" th:selected="${editTaskDTO.priority == 'MOYEN'}">MOYEN</option>
                                 <option value="ELEVE" th:selected="${editTaskDTO.priority == 'ELEVE'}">ELEVE</option>
@@ -99,7 +104,8 @@
                                    th:value="${editTaskDTO.endDate}">
                         </div>
                         <div class="form-group col-lg-12">
-                            <button class="btn btn-warning float-end m-2" title="Enregistrer les modifications" onclick="javascript:return confirm('Voulez-vous sauvegarder les changements?')"><i
+                            <button class="btn btn-warning float-end m-2" title="Enregistrer les modifications"
+                                    onclick="javascript:return confirm('Voulez-vous sauvegarder les changements?')"><i
                                     class="bi bi-floppy"></i>
                                 Enreg. Modif
                             </button>

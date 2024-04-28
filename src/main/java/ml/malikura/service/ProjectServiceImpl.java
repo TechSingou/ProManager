@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.EditProjectDTO;
 import ml.malikura.dto.NewProjectDTO;
+import ml.malikura.entity.EmployeEntity;
 import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
 import ml.malikura.exception.ProjectNotFoundException;
@@ -16,9 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +26,8 @@ import java.util.Optional;
 @Slf4j
 public class ProjectServiceImpl implements ProjectService {
     ProjectRepository projectRepository;
+    private EmployeService employeService;
+
 
     @Override
     public Page<ProjectEntity> getProjectList(String keyword, int page, int size) {
@@ -104,6 +106,58 @@ public class ProjectServiceImpl implements ProjectService {
             log.error("Exception occurred while deleting project to database , Exception message {}", ex.getMessage());
             throw new ProjectServiceBusinessException("Exception occurred while delete existing project");
         }
+    }
+
+
+    @Override
+    public Set<EmployeEntity> getMembersList(Long projectId) {
+        Optional<ProjectEntity> project = getProject(projectId);
+        return project.map(ProjectEntity::getMembers).orElse(null);
+    }
+
+    @Override
+    public Set<EmployeEntity> getNotMembersList(Long projectId) {
+        Set<EmployeEntity> employeesNotMembersList = null;
+        try {
+            log.info("ProjectServiceImpl:getNotMembersList execution started.");
+            Set<EmployeEntity> employeeListWithRoleUser = (Set<EmployeEntity>) employeService.getAll().stream().filter(e -> e.getRoles().size() == 1).collect(Collectors.toSet());
+            Set<EmployeEntity> membersOfProject = getMembersList(projectId);
+            if (membersOfProject.isEmpty()) {
+                employeesNotMembersList = (Set<EmployeEntity>) employeeListWithRoleUser;
+            } else {
+                for (EmployeEntity m : membersOfProject) {
+                    employeesNotMembersList = employeeListWithRoleUser.stream().filter(epl -> !Objects.equals(epl.getEmail(), m.getEmail())).collect(Collectors.toSet());
+                }
+                System.out.println("current list" + employeesNotMembersList);
+            }
+
+        } catch (Exception exception) {
+            log.error("Exception occurred while retrieving employees from database , Exception message {}", exception.getMessage());
+            throw new ProjectServiceBusinessException("Exception occurred while fetch employees from Database");
+        }
+        log.info("ProjectServiceImpl:getNotMembersList execution ended.");
+        return employeesNotMembersList;
+    }
+
+    @Override
+    public void addNewEmployeToProject(String email, Long projectId) {
+        log.info("ProjectServiceImpl:addNewEmployeToProject execution started.");
+        EmployeEntity employeeToAdd = employeService.loadEmployeByEmail(email);
+        ProjectEntity myProject = getProject(projectId).orElseThrow(null);
+        if (employeeToAdd == null)
+            throw new ProjectServiceBusinessException("Ce membre existe pas dans la base de données");
+        if (myProject == null)
+            throw new ProjectServiceBusinessException("Vous essayez d'ajouter un membre à ce projet qui n'existe pas.");
+        myProject.getMembers().add(employeeToAdd);
+        projectRepository.save(myProject);
+        log.info("ProjectServiceImpl:addNewEmployeToProject execution ended.");
+    }
+
+    @Override
+    public boolean isMemberOfProject(String email, Long projectId) {
+        ProjectEntity project = getProject(projectId).get();
+        EmployeEntity employee = employeService.loadEmployeByEmail(email);
+        return project.getMembers().contains(employee);
     }
 
 }

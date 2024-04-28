@@ -8,6 +8,7 @@ import ml.malikura.dto.EvaluateTaskDTO;
 import ml.malikura.dto.NewTaskDTO;
 import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
+import ml.malikura.service.ProjectService;
 import ml.malikura.service.TaskService;
 import ml.malikura.util.ValueMapper;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Controller
 @AllArgsConstructor
@@ -25,15 +27,20 @@ import java.util.Objects;
 public class TaskController {
 
     private TaskService taskService;
+    private ProjectService projectService;
 
     @GetMapping("/newTaskFrom")
     @PreAuthorize("hasRole('MANAGER')")
     public String getNewTaskForm(Model model, @RequestParam(value = "projectId") Long projectId, @RequestParam(value = "projectName") String projectName) {
         log.info("TaskController :: getNewTaskForm execution started.");
 
+        Optional<ProjectEntity> project = projectService.getProject(projectId);
+
+
         model.addAttribute("projectId", projectId);
         model.addAttribute("projectName", projectName);
         model.addAttribute("newTaskDTO", new NewTaskDTO());
+        project.ifPresent(projectEntity -> model.addAttribute("membersOfProject", projectEntity.getMembers()));
 
         log.info("TaskController :: getNewTaskForm execution ended.");
         return "taskTemplates/newTaskForm";
@@ -81,8 +88,11 @@ public class TaskController {
         model.addAttribute("task", taskRetrieved);
         model.addAttribute("projectName", taskRetrieved.getProject().getTitle());
         model.addAttribute("projectId", taskRetrieved.getProject().getId());
-        model.addAttribute("submitAllowed", Objects.equals(taskRetrieved.getState().toString(), "NON_SOUMIS") || Objects.equals(taskRetrieved.getState().toString(), "NON_RESOLU"));
-        // model.addAttribute("responsable", taskRetrieved.getResponsable().getName())
+        model.addAttribute("submitAllowed", Objects.equals(taskRetrieved.getState().toString(),
+                "NON_SOUMIS") || Objects.equals(taskRetrieved.getState().toString(), "NON_RESOLU"));
+        if (taskRetrieved.getResponsable() != null)
+            model.addAttribute("responsable", taskRetrieved.getResponsable().getFirstname()
+                    + ' ' + taskRetrieved.getResponsable().getName());
         model.addAttribute("evaluateTaskDTO", new EvaluateTaskDTO());
         log.info("TaskController::viewTask execution ended.");
         return "taskTemplates/viewTask";

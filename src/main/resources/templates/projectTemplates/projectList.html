@@ -3,6 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="./layoutTemplates/layout">
+
 <head>
     <meta charset="UTF-8">
     <title>Liste des projets</title>
@@ -43,16 +44,18 @@
             <tbody>
             <tr th:each="project:${projectList}">
                 <td>
-                    <a th:href="@{/viewProject(projectId=${project.id})}" th:text="${project.title}"></a>
+                    <a th:href="@{/viewProject(projectId=${project.id},email=${#authentication.name})}" th:text="${project.title}"></a>
                 </td>
                 <td th:text="${project.startDate}"></td>
                 <td th:text="${project.endDate}"></td>
                 <td th:text="${project.statut}"></td>
                 <td>
-                    <a th:href="@{/viewProject(projectId=${project.id})}"> voir plus...</a>
+                    <a th:href="@{/viewProject(projectId=${project.id},email=${#authentication.name})}"> voir
+                        plus...</a>
                 </td>
                 <td>
-                    <a class="btn btn-danger" th:href="@{/deleteProject(projectId=${project.id}, keyword=${currentKeyword})}"
+                    <a class="btn btn-danger"
+                       th:href="@{/deleteProject(projectId=${project.id}, keyword=${currentKeyword})}"
                        onclick="javascript:return confirm('Êtes-vous sûre?')">
                         <i class="bi bi-trash3"></i>
                     </a>

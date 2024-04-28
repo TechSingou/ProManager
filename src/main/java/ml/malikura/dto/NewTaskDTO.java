@@ -44,6 +44,6 @@ public class NewTaskDTO {
     private LocalDateTime affectationDate;
 
     //private Long authorId;
-    private Long responsableId;
+    private String responsableId;
     private Long projectId;
 }

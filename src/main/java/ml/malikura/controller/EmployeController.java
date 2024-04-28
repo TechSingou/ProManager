@@ -1,15 +1,18 @@
 package ml.malikura.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
+import ml.malikura.dto.AccountActivationDTO;
 import ml.malikura.entity.EmployeEntity;
+import ml.malikura.entity.TaskEntity;
 import ml.malikura.service.EmployeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,7 +23,6 @@ import java.util.List;
 
 @Controller
 @Slf4j
-@Validated
 public class EmployeController {
 
     private EmployeService employeService;
@@ -74,27 +76,39 @@ public class EmployeController {
     public String accountActivationForm(Model model, @RequestParam(value = "email") String email,
                                         @RequestParam(value = "keyword", defaultValue = "") String keyword,
                                         @RequestParam(value = "page", defaultValue = "0") int page,
-                                        @RequestParam(value = "size", defaultValue = "5") int size) {
+                                        @RequestParam(value = "size", defaultValue = "5") int size,
+                                        @RequestParam(value = "name") String name, @RequestParam(value = "firstname") String firstname) {
         model.addAttribute("email", email);
         model.addAttribute("page", page);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("name", name);
+        model.addAttribute("firstname", firstname);
+        model.addAttribute("accountActivationDTO", new AccountActivationDTO());
         return "employeTemplates/activateAccount";
     }
 
     @PostMapping("/employeeAccountActivate")
     @PreAuthorize("hasRole('ADMIN')")
     public String activateAccount(Model model, @RequestParam(value = "email") String email,
-                                  @RequestParam(value = "roles", required = false) @NotEmpty String[] roles,
+                                  @RequestParam(value = "name") String name,
+                                  @RequestParam(value = "firstname") String firstname,
+                                  @Valid AccountActivationDTO accountActivationDTO, BindingResult bindingResult,
                                   @RequestParam(value = "keyword", defaultValue = "") String keyword,
                                   @RequestParam(value = "page", defaultValue = "0") int page,
                                   @RequestParam(value = "size", defaultValue = "5") int size
     ) {
-        if (roles == null || roles.length == 0) {
-            model.addAttribute("errorRole", "Au moins un rôle doit être choisit");
-            return "employeTemplates/activateAccount"; // Return the form page with an error message
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("email", email);
+            model.addAttribute("page", page);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("name", name);
+            model.addAttribute("firstname", firstname);
+            return "employeTemplates/activateAccount";
+
         }
         List<String> myRoles = new ArrayList<>();
-        for (String role : roles) {
+        for (String role : accountActivationDTO.getRoles()) {
             if (role.equals("ADMIN")) {
                 myRoles = Arrays.asList("USER", "MANAGER", "ADMIN");
             } else if (role.equals("MANAGER")) {
