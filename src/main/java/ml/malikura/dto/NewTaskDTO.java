@@ -43,7 +43,7 @@ public class NewTaskDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime affectationDate;
 
-    //private Long authorId;
+    private String authorId;
     private String responsableId;
     private Long projectId;
 }

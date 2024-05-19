@@ -36,23 +36,27 @@ public class TaskServiceImpl implements TaskService {
         TaskEntity newTask = null;
         try {
             log.info("TaskServiceImpl:saveNewTask execution start.");
-            // Check if the giving task name exists
+            // Check if the given task name exists
             Optional<TaskEntity> findOne = taskRepository.findByTitle(newTaskDTO.getTitle());
             if (findOne.isPresent()) {
                 throw new ProjectServiceBusinessException("Une tâche avec le nom \"" + findOne.get().getTitle() + "\" existe déjà");
             }
-            // Find the root project and the executor of the task
+            // Find the root project, author and the executor of the task
             ProjectEntity findProject = projectService.getProject(newTaskDTO.getProjectId()).get();
-            EmployeEntity responsable = null;
+            EmployeEntity taskExecutor = null;
+            EmployeEntity authorTask = null;
             if (newTaskDTO.getResponsableId() != null) {
-                responsable = employeService.loadEmployeByEmail(newTaskDTO.getResponsableId());
+                taskExecutor = employeService.loadEmployeByEmail(newTaskDTO.getResponsableId());
                 newTaskDTO.setAffectationDate(LocalDateTime.now());
             }
+            authorTask = employeService.loadEmployeByEmail(newTaskDTO.getAuthorId());
+
             newTask = ValueMapper.convertToEntity(newTaskDTO);
 
             //Set the root project and the executor
             newTask.setProject(findProject);
-            newTask.setResponsable(responsable);
+            newTask.setResponsable(taskExecutor);
+            newTask.setAuthor(authorTask);
 
             savedTask = taskRepository.save(newTask);
 
@@ -101,6 +105,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void updateTask(EditTaskDTO editTaskDTO, Long taskId) {
         TaskEntity updateResult = null;
+        EmployeEntity taskExecutor = null;
         try {
             log.info("TaskServiceImpl:updateTask execution started.");
             TaskEntity taskToUpdate = taskRepository.findById(taskId).orElse(null);
@@ -109,10 +114,16 @@ public class TaskServiceImpl implements TaskService {
                 throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
             }
             TaskEntity taskNewValues = ValueMapper.convertToEntity(editTaskDTO);
-            taskNewValues.setProject(associatedProject);
-            taskToUpdate = taskNewValues;
+            if (editTaskDTO.getResponsableId() != null)
+                taskExecutor = employeService.loadEmployeByEmail(editTaskDTO.getResponsableId());
             // set executor
-            updateResult = taskRepository.save(taskToUpdate);
+            taskNewValues.setResponsable(taskExecutor);
+            taskNewValues.setProject(associatedProject);
+            // set author
+            taskNewValues.setAuthor(taskToUpdate.getAuthor());
+            taskNewValues.setCreationDate(taskToUpdate.getCreationDate());
+            //taskToUpdate = taskNewValues;
+            taskRepository.save(taskNewValues);
         } catch (Exception ex) {
             log.error("Exception occurred while updating project to database , Exception message {}", ex.getMessage());
             throw new ProjectServiceBusinessException(ex.getMessage());

@@ -134,19 +134,20 @@
         <div class="container-fluid my-5">
             <div class="row">
                 <div class="col-md-6">
-                    <div class="fs-5"><span class="fw-bold">Auteur : </span> <span
-                            class="text-muted">Manager 1</span>
+                    <div class="fs-5"><span class="fw-bold">Auteur : </span>
+                        <span class="text-muted" th:if="task.author != null" th:text="${task.author.firstname +' '+task.author.name}"></span>
+                        <span class="text-muted" th:unless="task.author != null">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Affectée : </span>
-                        <span th:if="${responsable != null}" class="text-muted" th:text="${responsable}"></span>
-                        <span th:unless="${responsable != null}" class="text-muted">--</span>
+                        <span th:if="${task.responsable != null}" class="text-muted" th:text="${task.responsable.firstname +' '+task.responsable.name }"></span>
+                        <span th:unless="${task.responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de création : </span>
                         <span class="text-muted" th:text="${task.creationDate}"></span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date d'affectation : </span>
-                        <span th:if="${responsable != null}" class="text-muted" th:text="${task.affectationDate}"></span>
-                        <span th:unless="${responsable != null}" class="text-muted">--</span>
+                        <span th:if="${task.responsable != null}" class="text-muted" th:text="${task.affectationDate}"></span>
+                        <span th:unless="${task.responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de début : </span>
                         <span class="text-muted" th:text="${task.startDate}"></span>

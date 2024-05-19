@@ -33,4 +33,5 @@ public class ProjectEntity {
 
     @OneToMany(mappedBy = "project")
     private List<TaskEntity> tasks;
+
 }

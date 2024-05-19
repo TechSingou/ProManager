@@ -128,7 +128,6 @@ public class ProjectServiceImpl implements ProjectService {
                 for (EmployeEntity m : membersOfProject) {
                     employeesNotMembersList = employeeListWithRoleUser.stream().filter(epl -> !Objects.equals(epl.getEmail(), m.getEmail())).collect(Collectors.toSet());
                 }
-                System.out.println("current list" + employeesNotMembersList);
             }
 
         } catch (Exception exception) {
@@ -153,6 +152,7 @@ public class ProjectServiceImpl implements ProjectService {
         log.info("ProjectServiceImpl:addNewEmployeToProject execution ended.");
     }
 
+    // Method used to manage member based access to a project
     @Override
     public boolean isMemberOfProject(String email, Long projectId) {
         ProjectEntity project = getProject(projectId).get();

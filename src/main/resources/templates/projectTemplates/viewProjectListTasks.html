@@ -59,8 +59,8 @@
                 <td th:text="${task.startDate}"></td>
                 <td th:text="${task.endDate}"></td>
                 <td>
-                    <!--<a th:if="${responsable != null}" th:href="@{/viewEmployee(employeeId=${responsableEmail})}" th:text="${responsable}"></a>
-                    <a th:unless="${responsable != null}">&#45;&#45;</a>-->
+                    <a th:if="${task.responsable != null}" th:href="@{/viewEmployee(employeeId=${responsableEmail})}" th:text="${task.responsable.firstname}"></a>
+                    <a th:unless="${task.responsable != null}">&#45;&#45;</a>
                 </td>
                 <td th:text="${task.statut}"></td>
                 <td th:text="${task.priority}"></td>

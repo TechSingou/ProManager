@@ -85,7 +85,12 @@ public class ValueMapper {
         editTaskDTO.setState(String.valueOf(taskEntity.getState()));
         editTaskDTO.setStartDate(taskEntity.getStartDate());
         editTaskDTO.setEndDate(taskEntity.getEndDate());
-        editTaskDTO.setResponsableId(null);
+        if (taskEntity.getResponsable() != null){
+            editTaskDTO.setResponsableId(taskEntity.getResponsable().getEmail());
+        }else{
+            editTaskDTO.setResponsableId(null);
+        }
+
         return editTaskDTO;
     }
 

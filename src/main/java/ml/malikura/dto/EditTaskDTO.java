@@ -44,8 +44,8 @@ public class EditTaskDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime endDate;
 
-    //private Long authorId;
-    private Long responsableId;
+    private String authorId;
+    private String responsableId;
 
     private Long projectId;
 

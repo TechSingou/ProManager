@@ -13,6 +13,8 @@ import ml.malikura.service.TaskService;
 import ml.malikura.util.ValueMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,9 +35,7 @@ public class TaskController {
     @PreAuthorize("hasRole('MANAGER')")
     public String getNewTaskForm(Model model, @RequestParam(value = "projectId") Long projectId, @RequestParam(value = "projectName") String projectName) {
         log.info("TaskController :: getNewTaskForm execution started.");
-
         Optional<ProjectEntity> project = projectService.getProject(projectId);
-
 
         model.addAttribute("projectId", projectId);
         model.addAttribute("projectName", projectName);
@@ -56,6 +56,7 @@ public class TaskController {
         model.addAttribute("editTaskDTO", editTaskDTO);
         model.addAttribute("projectId", taskEntity.getProject().getId());
         model.addAttribute("projectName", taskEntity.getProject().getTitle());
+        model.addAttribute("membersOfProject",taskEntity.getProject().getMembers());
 
         log.info("TaskController :: getEditTaskForm execution ended.");
         return "taskTemplates/editTaskForm";
@@ -64,8 +65,9 @@ public class TaskController {
     @PostMapping("/enregistrerNouvelleTache")
     @PreAuthorize("hasRole('MANAGER')")
     public String saveNewTask(Model model, @Valid NewTaskDTO newTaskDTO, BindingResult bindingResult) {
-
         log.info("TaskController::saveNewTask execution started.");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authorEmail = authentication.getName();
 
         if (bindingResult.hasErrors()) {
             ProjectEntity associatedProject = this.taskService.getAssociatedProject(newTaskDTO.getProjectId());
@@ -73,6 +75,7 @@ public class TaskController {
             model.addAttribute("projectName", associatedProject.getTitle());
             return "taskTemplates/newTaskForm";
         }
+        newTaskDTO.setAuthorId(authorEmail);
         TaskEntity savedTask = this.taskService.saveNewTask(newTaskDTO);
 
         log.info("TaskController::saveNewTask execution ended.");
@@ -90,21 +93,21 @@ public class TaskController {
         model.addAttribute("projectId", taskRetrieved.getProject().getId());
         model.addAttribute("submitAllowed", Objects.equals(taskRetrieved.getState().toString(),
                 "NON_SOUMIS") || Objects.equals(taskRetrieved.getState().toString(), "NON_RESOLU"));
-        if (taskRetrieved.getResponsable() != null)
-            model.addAttribute("responsable", taskRetrieved.getResponsable().getFirstname()
-                    + ' ' + taskRetrieved.getResponsable().getName());
+//        if (taskRetrieved.getResponsable() != null)
+//            model.addAttribute("responsable", taskRetrieved.getResponsable().getFirstname()
+//                    + ' ' + taskRetrieved.getResponsable().getName());
         model.addAttribute("evaluateTaskDTO", new EvaluateTaskDTO());
         log.info("TaskController::viewTask execution ended.");
         return "taskTemplates/viewTask";
     }
 
+        // Not currently working as expected after adding the executor update feature(to solve)
     @PostMapping("/updateTask")
     @PreAuthorize("hasRole('MANAGER')")
     public String updateTask(Model model, @Valid EditTaskDTO editTaskDTO, BindingResult bindingResult) {
         log.info("TaskController :: updateTask execution started.");
 
         if (bindingResult.hasErrors()) {
-            //System.out.println(bindingResult.getAllErrors());
             ProjectEntity associatedProject = this.taskService.getAssociatedProject(editTaskDTO.getProjectId());
             model.addAttribute("projectId", associatedProject.getId());
             model.addAttribute("projectName", associatedProject.getTitle());

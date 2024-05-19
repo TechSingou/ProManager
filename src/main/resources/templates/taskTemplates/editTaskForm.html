@@ -53,9 +53,9 @@
                             <select th:value="${editTaskDTO.responsableId}" class="form-select" id="responsableId"
                                     name="responsableId">
                                 <option value="">-||-</option>
-                                <option value="1">Employe1</option>
-                                <option value="2">Employe2</option>
-                                <option value="3">Employe3</option>
+                                <option th:each="member : ${membersOfProject}" th:value="${member.email}"
+                                        th:text="${member.firstname + ' ' + member.name}" th:selected="${member.email == editTaskDTO.responsableId}">
+                                </option>
                             </select>
                         </div>
                         <div class="form-group col-lg-4 mb-3">
