@@ -51,7 +51,7 @@
                 <td th:text="${em.jobTitle}"></td>
                 <td th:text="${em.telephone}"></td>
                 <td>
-                    <a class="btn btn-danger" th:href="@{/#}"
+                    <a class="btn btn-danger" th:href="@{/retirerMembre(projectId=${projectId},projectName=${projectName},email=${em.email})}"
                        onclick="javascript:return confirm('les tâches assignés pour ce projet seront rétirer aussi. Êtes_vous sure?')">
                         retirer
                     </a>

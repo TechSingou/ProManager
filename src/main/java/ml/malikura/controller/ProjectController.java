@@ -10,9 +10,11 @@ import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
 import ml.malikura.service.EmployeService;
 import ml.malikura.service.ProjectService;
+import ml.malikura.util.MyUtils;
 import ml.malikura.util.ValueMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,10 +34,18 @@ public class ProjectController {
 
     @GetMapping("/projets")
     @PreAuthorize("hasRole('USER')")
-    public String projectsList(Model model, @RequestParam(value = "keyword", defaultValue = "") String keyword, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "3") int size) {
+    public String projectsList(Model model, @RequestParam(value = "keyword", defaultValue = "") String keyword,
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "size", defaultValue = "3") int size,
+                               Authentication authentication) {
         log.info("ProjectController::projectsList execution started");
-
-        Page<ProjectEntity> projectListPage = projectService.getProjectList(keyword, page, size);
+        Page<ProjectEntity> projectListPage = null;
+        boolean anyMatch = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
+        if (anyMatch) {
+            projectListPage = projectService.getProjectList(keyword, page, size);
+        } else {
+            projectListPage = projectService.getMyProjectList(page, size, authentication.getName());
+        }
         model.addAttribute("projectList", projectListPage);
         model.addAttribute("currentKeyword", keyword);
         model.addAttribute("currentPage", page);
@@ -70,25 +80,18 @@ public class ProjectController {
 
     @GetMapping("/viewProject")
     @PreAuthorize("hasRole('MANAGER') OR @projectServiceImpl.isMemberOfProject(#email,#projectId)")
-    public String viewProject(Model model, @RequestParam(value = "projectId") Long projectId, @RequestParam(value = "email") String email) {
+    public String viewProject(Model model, @RequestParam(value = "projectId") Long projectId,
+                              @RequestParam(value = "email") String email, Authentication authentication) {
         log.info("ProjectController::viewProject execution started");
 
         ProjectEntity project = projectService.getProject(projectId).get();
         model.addAttribute("project", project);
-
+        boolean anyMatch = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
+        if (!anyMatch) {
+            model.addAttribute("myTasks", projectService.getTasksByProjectByExecutor(projectId, email));
+        }
         log.info("ProjectController::viewProject execution ended");
         return "projectTemplates/viewProject";
-    }
-
-
-    @GetMapping()
-    public String viewProjectMembersList() {
-        return "";
-    }
-
-    public String statProject() {
-
-        return "0";
     }
 
     @GetMapping("/editerProjetForm")
@@ -106,7 +109,7 @@ public class ProjectController {
 
     @PostMapping("/miseAJourProjet")
     @PreAuthorize("hasRole('MANAGER')")
-    public String updateProject(Model model, @Valid EditProjectDTO project, BindingResult bindingResult) {
+    public String updateProject(Model model, @Valid EditProjectDTO project, BindingResult bindingResult, Authentication authentication) {
         log.info("ProjectController::updateProject execution started");
 
         if (bindingResult.hasErrors()) {
@@ -115,7 +118,7 @@ public class ProjectController {
         projectService.updateProduct(project, project.getId());
         log.info("ProjectController::updateProject execution ended.");
 
-        return "redirect:/viewProject?projectId=" + project.getId();
+        return "redirect:/viewProject?projectId=" + project.getId()+"&email="+authentication.getName();
     }
 
     @GetMapping("/deleteProject")
@@ -159,5 +162,26 @@ public class ProjectController {
         return "redirect:/viewProjectMembersList?projectId=" + projectId + "&projectName=" + projectName;
     }
 
-    //Retirer le membre du projet
+
+    @GetMapping("/viewStat")
+    @PreAuthorize("hasRole('MANAGER')")
+    public String statProject(@RequestParam(value = "projectId") Long projectId, Model model) {
+        ProjectEntity project = projectService.getProject(projectId).get();
+
+        List<TaskEntity> taskEntityList = project.getTasks();
+
+        model.addAttribute("projectId", projectId);
+        model.addAttribute("projectName", project.getTitle());
+        model.addAttribute("totalTasks", project.getTasks().size());
+        model.addAttribute("totalMembers", project.getMembers().size());
+        model.addAttribute("noteMoyenne", MyUtils.getMoyenne(taskEntityList));
+        return "projectTemplates/statProject";
+    }
+
+
+    @GetMapping("/retirerMembre")
+    public String retirerMembre(@RequestParam(value = "projectId") Long projectId, @RequestParam(value = "projectName") String projectName, @RequestParam(value = "email") String memberEmail) {
+        this.projectService.retirerMembre(projectId, memberEmail);
+        return "redirect:/viewProjectMembersList?projectId=" + projectId + "&projectName="+projectName;
+    }
 }

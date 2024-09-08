@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="./layoutTemplates/layout">
+      layout:decorate="./layoutTemplates/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <meta charset="UTF-8">
     <title>Détail collaborateur</title>
@@ -15,7 +16,37 @@
             <li class="breadcrumb-item active" aria-current="page">Détail collaborateur</li>
         </ol>
     </nav>
-    <div style="width:30%;" class="bg-info rounded-circle">
+    <div class="mt-5">
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <div>
+                    <div class="navbar-brand"><small>Nom :<span th:text="${employee.name}"></span></small></div>
+                    <div class="navbar-brand"><small>Prénom : <span th:text="${employee.firstname}"></span></small>
+                    </div>
+                    <div class="navbar-brand"><small>Spécialité : <span th:text="${employee.jobTitle}"></span> </small>
+                    </div>
+                </div>
+                <div sec:authorize="hasRole('ADMIN')" class="d-flex">
+                    <a class="btn btn-warning m-2" th:href="@{/getEditEmployeForm(employeId=${employee.email})}">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a class="btn btn-danger m-2" th:href="@{/deleteEmployee(employeeId=${employee.id})}"
+                       onclick="javascript:return confirm('Êtes-vous sûre?')">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid mt-5">
+            <div class="navbar-brand"><small>Email : <span th:text="${employee.email}"></span></small></div>
+            <div class="navbar-brand"><small>Téléphone : <span th:text="${employee.telephone}"></span></small></div>
+            <div class="navbar-brand"><small>Rôle :<span th:text="${roleEmploye}"></span></small></div>
+            <div class="navbar-brand"><small>Compte : <span th:if="${employee.accountEnabled == true}" class="text-success">ACTIF</span>
+                <span th:if="${employee.accountEnabled == false}" class="text-danger">INACTIF</span></small></div>
+            <div class="navbar-brand"><small>Performance : <span th:text="${moyenne}"></span></small></div>
+            <div class="navbar-brand"><small>Performance moyenne de l'équipe : --</small>
+            </div>
+        </div>
     </div>
 </div>
 </body>

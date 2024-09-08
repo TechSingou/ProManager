@@ -12,7 +12,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${editProjectDTO.id})}"
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${editProjectDTO.id},email=${#authentication.name})}"
                                            th:text="${editProjectDTO.title}"></a></li>
             <li class="breadcrumb-item active" aria-current="page">Mise à jour</li>
         </ol>

@@ -1,18 +1,21 @@
 package ml.malikura.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.AccountActivationDTO;
+import ml.malikura.dto.EditCollaborateurDTO;
+import ml.malikura.dto.NewCollaborateurDTO;
 import ml.malikura.entity.EmployeEntity;
-import ml.malikura.entity.TaskEntity;
 import ml.malikura.service.EmployeService;
+import ml.malikura.util.MyUtils;
+import ml.malikura.util.ValueMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,8 +40,6 @@ public class EmployeController {
     public String employeList(Model model, @RequestParam(value = "keyword", defaultValue = "") String keyword,
                               @RequestParam(value = "page", defaultValue = "0") int page,
                               @RequestParam(value = "size", defaultValue = "5") int size) {
-
-
         log.info("ProjectController::employeList execution started");
 
         Page<EmployeEntity> employeeListPage = this.employeService.getEmployeesList(keyword, page, size);
@@ -54,21 +55,61 @@ public class EmployeController {
 
     @GetMapping("/newEmployeeForm")
     @PreAuthorize("hasRole('ADMIN')")
-    public String getNewEmployeForm() {
+    public String getNewEmployeForm(Model model) {
+        model.addAttribute("newCollaborateurDTO", new NewCollaborateurDTO());
+        return "employeTemplates/newEmployeForm";
+    }
 
-        return "newEmployeForm";
+    @PostMapping("/addNewEmployeeByAdmin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String addNewEmployeeByAdmin(Model model, @Valid NewCollaborateurDTO newCollaborateurDTO, BindingResult bindingResult) {
+        // Check if password and passwordConfirmation match
+        if (!newCollaborateurDTO.getPassword().equals(newCollaborateurDTO.getPasswordConfirmation())) {
+            bindingResult.rejectValue("passwordConfirmation", "error.password.notMatch", "Les mots de passe ne correspondent pas.");
+        }
+        if (bindingResult.hasErrors()) {
+            return "employeTemplates/newEmployeForm";
+        }
+        EmployeEntity savedEmployee = this.employeService.addCollaborateurByAdmin(newCollaborateurDTO);
+        return "redirect:/viewEmployee?employeeId=" + savedEmployee.getEmail();
     }
 
     @GetMapping("/viewEmployee")
     @PreAuthorize("hasRole('MANAGER')")
-    public String viewEmploye(@RequestParam(value = "employeeId") String email) {
-
+    public String viewEmploye(@RequestParam(value = "employeeId") String email, Model model) {
+        EmployeEntity employee = employeService.loadEmployeByEmail(email);
+        String roleEmploye = null;
+        if (employee.getRoles().stream().anyMatch(r -> r.getRole().equals("ADMIN"))) {
+            roleEmploye = "ADMIN";
+        } else if (employee.getRoles().stream().anyMatch(r -> r.getRole().equals("MANAGER"))) {
+            roleEmploye = "MANAGER";
+        } else {
+            roleEmploye = "USER";
+        }
+        model.addAttribute("employee", employee);
+        model.addAttribute("moyenne", MyUtils.getMoyenne(employee.getTasksToDo()));
+        model.addAttribute("roleEmploye", roleEmploye);
         return "employeTemplates/viewEmploye";
     }
 
-    public String getEditEmployeForm() {
+    @GetMapping("/getEditEmployeForm")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String getEditEmployeForm(Model model, @RequestParam(value = "employeId") String employeEmail) {
+        EmployeEntity employe = this.employeService.loadEmployeByEmail(employeEmail);
+        EditCollaborateurDTO editCollaborateurDTO = ValueMapper.convertToCollaborateurEditDTO(employe);
+        model.addAttribute("editCollaborateurDTO", editCollaborateurDTO);
+        return "employeTemplates/editEmployeForm";
+    }
 
-        return "0";
+    @PostMapping("/editEmployeeByAdmin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String editEmployeByAdmin(Model model, @Valid EditCollaborateurDTO editCollaborateurDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("employeId", editCollaborateurDTO.getEmail());
+            return "employeTemplates/editEmployeForm";
+        }
+        this.employeService.editCollaborateurByAdmin(editCollaborateurDTO);
+        return "redirect:/viewEmployee?employeeId=" + editCollaborateurDTO.getEmail();
     }
 
     @GetMapping("/getActivateAccountForm")
@@ -97,7 +138,6 @@ public class EmployeController {
                                   @RequestParam(value = "page", defaultValue = "0") int page,
                                   @RequestParam(value = "size", defaultValue = "5") int size
     ) {
-
         if (bindingResult.hasErrors()) {
             model.addAttribute("email", email);
             model.addAttribute("page", page);
@@ -108,14 +148,12 @@ public class EmployeController {
 
         }
         List<String> myRoles = new ArrayList<>();
-        for (String role : accountActivationDTO.getRoles()) {
-            if (role.equals("ADMIN")) {
-                myRoles = Arrays.asList("USER", "MANAGER", "ADMIN");
-            } else if (role.equals("MANAGER")) {
-                myRoles = Arrays.asList("USER", "MANAGER");
-            } else {
-                myRoles = Arrays.asList("USER");
-            }
+        if (accountActivationDTO.getRole().equals("ADMIN")) {
+            myRoles = Arrays.asList("USER", "MANAGER", "ADMIN");
+        } else if (accountActivationDTO.getRole().equals("MANAGER")) {
+            myRoles = Arrays.asList("USER", "MANAGER");
+        } else {
+            myRoles = Arrays.asList("USER");
         }
         employeService.enabledAccount(email, myRoles);
         return "redirect:/employes?keyword=" + keyword + "&page=" + page;
@@ -129,5 +167,12 @@ public class EmployeController {
                                                  @RequestParam(value = "size", defaultValue = "5") int size) {
         employeService.disabledAccount(email);
         return "redirect:/employes?keyword=" + keyword + "&page=" + page;
+    }
+
+    @GetMapping("/deleteEmployee")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String deleteEmployeeByAdmin(@RequestParam(value = "employeeId") Long employeId){
+        this.employeService.deleteByIdByAdmin(employeId);
+        return "redirect:/employes";
     }
 }

@@ -2,6 +2,8 @@ package ml.malikura.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ml.malikura.dto.EditCollaborateurDTO;
+import ml.malikura.dto.NewCollaborateurDTO;
 import ml.malikura.dto.NewEmployeDTO;
 import ml.malikura.entity.EmployeEntity;
 import ml.malikura.entity.ProjectEntity;
@@ -16,10 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -113,21 +112,86 @@ public class EmployeServiceImpl implements EmployeService {
     public Page<EmployeEntity> getEmployeesList(String keyword, int page, int size) {
         Page<EmployeEntity> employeEntities = null;
         try {
-            log.info("ProjectServiceImpl:getProjectList execution started.");
+            log.info("EmployeServiceImpl:getEmployeesList execution started.");
             employeEntities = employeRepository.findByFirstnameContainingIgnoreCase(keyword, PageRequest.of(page, size));
             if (employeEntities.isEmpty()) {
                 employeEntities = Page.empty();
             }
         } catch (Exception ex) {
-            log.error("Exception occurred while retrieving projects from database , Exception message {}", ex.getMessage());
+            log.error("Exception occurred while retrieving employees from database , Exception message {}", ex.getMessage());
             throw new ProjectServiceBusinessException("Exception occurred while fetch all projects from Database");
         }
-        log.info("ProjectServiceImpl:getProducts execution ended.");
+        log.info("EmployeServiceImpl:getEmployeesList execution ended.");
         return employeEntities;
     }
 
     @Override
     public List<EmployeEntity> getAll() {
         return employeRepository.findAll();
+    }
+
+    @Override
+    public EmployeEntity addCollaborateurByAdmin(NewCollaborateurDTO newCollaborateurDTO) {
+        EmployeEntity employeEntity = null;
+        try {
+            log.info("EmployeServiceImpl:addCollaborateurByAdmin execution started.");
+            employeEntity = employeRepository.findByEmail(newCollaborateurDTO.getEmail());
+            if (employeEntity != null)
+                throw new ProjectServiceBusinessException("Ce collaborateur existe déjà");
+            //Encode password
+            newCollaborateurDTO.setPassword(passwordEncoder.encode(newCollaborateurDTO.getPassword()));
+            employeEntity = ValueMapper.convertToEmploye(newCollaborateurDTO);
+        } catch (Exception ex) {
+            log.error("Exception occurred during the operation");
+            throw new ProjectServiceBusinessException("Exception occurred during the operation");
+        }
+        log.info("EmployeServiceImpl:addCollaborateurByAdmin execution ended.");
+        return employeRepository.save(employeEntity);
+    }
+
+    @Override
+    public void editCollaborateurByAdmin(EditCollaborateurDTO editCollaborateurDTO) {
+        EmployeEntity employeToUpdate = null;
+        try {
+            log.info("EmployeServiceImpl:editCollaborateurByAdmin execution started.");
+            employeToUpdate = employeRepository.findByEmail(editCollaborateurDTO.getEmail());
+            if (employeToUpdate == null)
+                throw new ProjectServiceBusinessException("Ce collaborateur n'existe pas!");
+            employeToUpdate.setName(editCollaborateurDTO.getName());
+            employeToUpdate.setFirstname(editCollaborateurDTO.getFirstname());
+            employeToUpdate.setJobTitle(editCollaborateurDTO.getJobTitle());
+            employeToUpdate.setTelephone(editCollaborateurDTO.getTelephone());
+            employeToUpdate.setAddress(editCollaborateurDTO.getAddress());
+            if (editCollaborateurDTO.getRole().equals("ADMIN")) {
+                employeToUpdate.getRoles().add(new RoleEmploye("USER"));
+                employeToUpdate.getRoles().add(new RoleEmploye("MANAGER"));
+                employeToUpdate.getRoles().add(new RoleEmploye("ADMIN"));
+            } else if (editCollaborateurDTO.getRole().equals("MANAGER")) {
+                employeToUpdate.getRoles().add(new RoleEmploye("USER"));
+                employeToUpdate.getRoles().add(new RoleEmploye("MANAGER"));
+            } else {
+                employeToUpdate.getRoles().add(new RoleEmploye("USER"));
+            }
+
+            String etatCompte = editCollaborateurDTO.getEtatCompte();
+            employeToUpdate.setAccountEnabled(etatCompte.equals("ACTIF"));
+            this.employeRepository.save(employeToUpdate);
+        } catch (Exception ex) {
+            log.error("Exception occurred during the operation");
+            throw new ProjectServiceBusinessException("Exception occurred during the operation");
+        }
+        log.info("EmployeServiceImpl:addCollaborateurByAdmin execution ended.");
+    }
+
+    @Override
+    public void deleteByIdByAdmin(Long employeId) {
+        try{
+            log.info("EmployeServiceImpl:deleteByIdByAdmin execution started.");
+            this.employeRepository.deleteById(employeId);
+        }catch (Exception ex){
+            log.error("Exception occurred during this operation.");
+            throw new ProjectServiceBusinessException("Exception occurred during this operation.");
+        }
+        log.info("EmployeServiceImpl:deleteByIdByAdmin execution started.");
     }
 }

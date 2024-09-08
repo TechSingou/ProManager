@@ -1,10 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Editer collaborateur</title>
 </head>
 <body>
-
+<div layout:fragment="myContent">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/employes}">Employés</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/viewEmployee(employeeId=${editCollaborateurDTO.email})}"><span
+                    th:text="${editCollaborateurDTO.firstname +' '+editCollaborateurDTO.name}"></span></a></li>
+            <li class="breadcrumb-item active" aria-current="page">Editer collaborateur</li>
+        </ol>
+    </nav>
+    <div class="card rounded-3 col-md-6 offset-3 border border-warning mt-5">
+        <div class="card-body p-4">
+            <form th:action="@{/editEmployeeByAdmin}" th:method="post">
+                <input type="hidden" name="email" th:value="${editCollaborateurDTO.email}">
+                <div class="row mb-3">
+                    <label for="inputName" class="col-sm-2 col-form-label">Nom</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="inputName" aria-label="last name" name="name"
+                               th:value="${editCollaborateurDTO.name}">
+                        <span class="text-danger" th:errors="${editCollaborateurDTO.name}"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputFirstname" class="col-sm-2 col-form-label">Prenom</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="inputFirstname" aria-label="first name"
+                               name="firstname" th:value="${editCollaborateurDTO.firstname}">
+                        <span class="text-danger" th:errors="${editCollaborateurDTO.firstname}"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputJobTitle" class="col-sm-3 col-form-label">Spécialité</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="inputJobTitle" aria-label="job title"
+                               name="jobTitle"
+                               th:value="${editCollaborateurDTO.jobTitle}">
+                        <span class="text-danger" th:errors="${editCollaborateurDTO.jobTitle}"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputTel" class="col-sm-3 col-form-label">Téléphone</label>
+                    <div class="col-sm-9">
+                        <input type="tel" class="form-control" id="inputTel" aria-label="phone number" name="telephone"
+                               th:value="${editCollaborateurDTO.telephone}">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="inputAdress" class="col-sm-2 col-form-label">Adresse</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="inputAdress" aria-label="adress" name="address"
+                               th:value="${editCollaborateurDTO.address}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <label>Role</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="inlineBox1" value="USER" name="role"
+                                       th:checked="${editCollaborateurDTO.role == 'USER'}">
+                                <label class="form-check-label" for="inlineBox1">Utilisateur</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="inlineBox2" value="MANAGER" name="role"
+                                       th:checked="${editCollaborateurDTO.role == 'MANAGER'}">
+                                <label class="form-check-label" for="inlineBox2">Manager</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="inlineBox3" value="ADMIN" name="role"
+                                       th:checked="${editCollaborateurDTO.role == 'ADMIN'}">
+                                <label class="form-check-label" for="inlineBox3">Administrateur</label>
+                            </div>
+                            <span class="text-danger" th:errors="${editCollaborateurDTO.role}"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <label>Etat compte</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="inlineRadioBox1" value="ACTIF"
+                                       name="etatCompte" th:checked="${editCollaborateurDTO.etatCompte == 'ACTIF'}">
+                                <label class="form-check-label" for="inlineRadioBox1">Actif</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="inlineRadioBox2" value="INACTIF"
+                                       name="etatCompte" th:checked="${editCollaborateurDTO.etatCompte == 'INACTIF'}">
+                                <label class="form-check-label" for="inlineRadioBox2">Inactif</label>
+                            </div>
+                            <span class="text-danger" th:errors="${editCollaborateurDTO.etatCompte}"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning mt-2"  onclick="javascript:return confirm('Êtes-vous sûre?')">Enreg. Modif</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 </body>
 </html>

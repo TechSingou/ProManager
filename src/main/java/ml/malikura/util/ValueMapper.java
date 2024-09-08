@@ -3,9 +3,14 @@ package ml.malikura.util;
 import ml.malikura.dto.*;
 import ml.malikura.entity.EmployeEntity;
 import ml.malikura.entity.ProjectEntity;
+import ml.malikura.entity.RoleEmploye;
 import ml.malikura.entity.TaskEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class ValueMapper {
 
@@ -85,9 +90,9 @@ public class ValueMapper {
         editTaskDTO.setState(String.valueOf(taskEntity.getState()));
         editTaskDTO.setStartDate(taskEntity.getStartDate());
         editTaskDTO.setEndDate(taskEntity.getEndDate());
-        if (taskEntity.getResponsable() != null){
+        if (taskEntity.getResponsable() != null) {
             editTaskDTO.setResponsableId(taskEntity.getResponsable().getEmail());
-        }else{
+        } else {
             editTaskDTO.setResponsableId(null);
         }
 
@@ -124,5 +129,62 @@ public class ValueMapper {
         employeEntity.setTasksToDo(null);
         employeEntity.setTasksCreated(null);
         return employeEntity;
+    }
+
+    public static EmployeEntity convertToEmploye(NewCollaborateurDTO newCollaborateurDTO) {
+        EmployeEntity employeEntity = new EmployeEntity();
+        employeEntity.setId(null);
+        employeEntity.setName(newCollaborateurDTO.getName());
+        employeEntity.setFirstname(newCollaborateurDTO.getFirstname());
+        employeEntity.setEmail(newCollaborateurDTO.getEmail());
+        employeEntity.setPassword(newCollaborateurDTO.getPassword());
+        employeEntity.setJobTitle(newCollaborateurDTO.getJobTitle());
+        employeEntity.setAddress(newCollaborateurDTO.getAddress());
+        employeEntity.setTelephone(newCollaborateurDTO.getTelephone());
+        employeEntity.setTasksToDo(null);
+        employeEntity.setTasksCreated(null);
+        String role = newCollaborateurDTO.getRole();
+        List<RoleEmploye> employeRoles = new ArrayList<>();
+        if (role.equals("ADMIN")) {
+            employeRoles.add(new RoleEmploye("USER"));
+            employeRoles.add(new RoleEmploye("MANAGER"));
+            employeRoles.add(new RoleEmploye("ADMIN"));
+            employeEntity.setRoles((employeRoles));
+        } else if (role.equals("MANAGER")) {
+            employeRoles.add(new RoleEmploye("USER"));
+            employeRoles.add(new RoleEmploye("MANAGER"));
+            employeEntity.setRoles((employeRoles));
+        } else {
+            employeRoles.add(new RoleEmploye("USER"));
+            employeEntity.setRoles((employeRoles));
+        }
+        //employeEntity.setAccountEnabled(false);
+        String etatCompte = newCollaborateurDTO.getEtatCompte();
+        employeEntity.setAccountEnabled(etatCompte.equals("ACTIF"));
+        return employeEntity;
+    }
+
+    public static EditCollaborateurDTO convertToCollaborateurEditDTO(EmployeEntity employe) {
+        EditCollaborateurDTO editCollaborateurDTO = new EditCollaborateurDTO();
+        editCollaborateurDTO.setFirstname(employe.getFirstname());
+        editCollaborateurDTO.setName(employe.getName());
+        editCollaborateurDTO.setEmail(employe.getEmail());
+        editCollaborateurDTO.setJobTitle(employe.getJobTitle());
+        editCollaborateurDTO.setTelephone(employe.getTelephone());
+        editCollaborateurDTO.setAddress(employe.getAddress());
+        if (employe.getRoles().stream().anyMatch(roleEmploye -> roleEmploye.getRole().equals("ADMIN"))) {
+            editCollaborateurDTO.setRole("ADMIN");
+        } else if (employe.getRoles().stream().anyMatch(roleEmploye -> roleEmploye.getRole().equals("MANAGER"))) {
+            editCollaborateurDTO.setRole("MANAGER");
+        } else {
+            editCollaborateurDTO.setRole("USER");
+        }
+
+        if (employe.getAccountEnabled()) {
+            editCollaborateurDTO.setEtatCompte("ACTIF");
+        } else {
+            editCollaborateurDTO.setEtatCompte("INACTIF");
+        }
+        return editCollaborateurDTO;
     }
 }

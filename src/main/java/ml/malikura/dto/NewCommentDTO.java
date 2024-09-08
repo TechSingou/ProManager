@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NewCommentDTO {
 
-    @NotBlank(message = "le contenu ne doit pas NULL ou VIDE")
+    @NotBlank(message = "Ce champ est obligatoire")
     private String content;
-    private Long authorId;
+    private String authorComment;
     private Long taskId;
 }

@@ -5,23 +5,26 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.EditTaskDTO;
 import ml.malikura.dto.EvaluateTaskDTO;
+import ml.malikura.dto.NewCommentDTO;
 import ml.malikura.dto.NewTaskDTO;
 import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
+import ml.malikura.repository.CommentRepository;
 import ml.malikura.service.ProjectService;
 import ml.malikura.service.TaskService;
 import ml.malikura.util.ValueMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Controller
 @AllArgsConstructor
@@ -30,12 +33,13 @@ public class TaskController {
 
     private TaskService taskService;
     private ProjectService projectService;
+    private CommentRepository commentRepository;
 
     @GetMapping("/newTaskFrom")
     @PreAuthorize("hasRole('MANAGER')")
     public String getNewTaskForm(Model model, @RequestParam(value = "projectId") Long projectId, @RequestParam(value = "projectName") String projectName) {
         log.info("TaskController :: getNewTaskForm execution started.");
-        Optional<ProjectEntity> project = projectService.getProject(projectId);
+        var project = projectService.getProject(projectId);
 
         model.addAttribute("projectId", projectId);
         model.addAttribute("projectName", projectName);
@@ -51,12 +55,12 @@ public class TaskController {
     public String getEditTaskForm(Model model, @RequestParam(value = "taskId") Long taskId) {
         log.info("TaskController :: getEditTaskForm execution started.");
 
-        TaskEntity taskEntity = this.taskService.getTask(taskId);
+        var taskEntity = this.taskService.getTask(taskId);
         EditTaskDTO editTaskDTO = ValueMapper.convertToEditDTO(taskEntity);
         model.addAttribute("editTaskDTO", editTaskDTO);
         model.addAttribute("projectId", taskEntity.getProject().getId());
         model.addAttribute("projectName", taskEntity.getProject().getTitle());
-        model.addAttribute("membersOfProject",taskEntity.getProject().getMembers());
+        model.addAttribute("membersOfProject", taskEntity.getProject().getMembers());
 
         log.info("TaskController :: getEditTaskForm execution ended.");
         return "taskTemplates/editTaskForm";
@@ -67,7 +71,7 @@ public class TaskController {
     public String saveNewTask(Model model, @Valid NewTaskDTO newTaskDTO, BindingResult bindingResult) {
         log.info("TaskController::saveNewTask execution started.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String authorEmail = authentication.getName();
+        var authorEmail = authentication.getName();
 
         if (bindingResult.hasErrors()) {
             ProjectEntity associatedProject = this.taskService.getAssociatedProject(newTaskDTO.getProjectId());
@@ -88,20 +92,22 @@ public class TaskController {
         log.info("TaskController::viewTask execution started.");
 
         TaskEntity taskRetrieved = this.taskService.getTask(taskId);
+        var allComments = commentRepository.findByTaskOrderByPubDateDesc(taskRetrieved);
+
         model.addAttribute("task", taskRetrieved);
         model.addAttribute("projectName", taskRetrieved.getProject().getTitle());
         model.addAttribute("projectId", taskRetrieved.getProject().getId());
         model.addAttribute("submitAllowed", Objects.equals(taskRetrieved.getState().toString(),
                 "NON_SOUMIS") || Objects.equals(taskRetrieved.getState().toString(), "NON_RESOLU"));
-//        if (taskRetrieved.getResponsable() != null)
-//            model.addAttribute("responsable", taskRetrieved.getResponsable().getFirstname()
-//                    + ' ' + taskRetrieved.getResponsable().getName());
+        model.addAttribute("resolveAllowed", Objects.equals(taskRetrieved.getState().toString(), "SOUMIS"));
         model.addAttribute("evaluateTaskDTO", new EvaluateTaskDTO());
+        model.addAttribute("newCommentDTO", new NewCommentDTO());
+        model.addAttribute("comments", allComments);
         log.info("TaskController::viewTask execution ended.");
         return "taskTemplates/viewTask";
     }
 
-        // Not currently working as expected after adding the executor update feature(to solve)
+    // Not currently working as expected after adding the executor update feature(to solve)
     @PostMapping("/updateTask")
     @PreAuthorize("hasRole('MANAGER')")
     public String updateTask(Model model, @Valid EditTaskDTO editTaskDTO, BindingResult bindingResult) {
@@ -140,10 +146,17 @@ public class TaskController {
     @PreAuthorize("hasRole('USER')")
     public String TaskList(Model model, @RequestParam(value = "keyword", defaultValue = "") String keyword,
                            @RequestParam(value = "page", defaultValue = "0") int page,
-                           @RequestParam(value = "size", defaultValue = "3") int size) {
+                           @RequestParam(value = "size", defaultValue = "3") int size,
+                           Authentication authentication
+                           ) {
         log.info("ProjectController::TaskList execution started");
-
-        Page<TaskEntity> taskListPage = this.taskService.getAllByPage(keyword, page, size);
+        Page<TaskEntity> taskListPage = null;
+        boolean anyMatch = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
+        if(anyMatch){
+            taskListPage = this.taskService.getAllByPage(keyword, page, size);
+        }else {
+            taskListPage = this.taskService.getMyTasks(authentication.getName(),page,size);
+        }
         model.addAttribute("taskListPage", taskListPage);
         model.addAttribute("currentKeyword", keyword);
         model.addAttribute("currentPage", page);
@@ -195,5 +208,33 @@ public class TaskController {
                              @RequestParam(value = "projectName") String projectName) {
         this.taskService.deleteTaskById(taskId);
         return "redirect:/getProjectTasks?projectId=" + projectId + "&projectName=" + projectName;
+    }
+
+
+    // To start with, the post method is not working with argument
+
+    @PostMapping("/addNewComment")
+    @PreAuthorize("hasRole('MANAGER')")
+    public String addNewComment( @Valid NewCommentDTO newCommentDTO, Model model, BindingResult bindingResult) {
+        log.info("ProjectController :: addNewComment execution started");
+
+        TaskEntity taskRetrieved = this.taskService.getTask(newCommentDTO.getTaskId());
+        model.addAttribute("task", taskRetrieved);
+        model.addAttribute("projectName", taskRetrieved.getProject().getTitle());
+        model.addAttribute("projectId", taskRetrieved.getProject().getId());
+        model.addAttribute("evaluateTaskDTO", new EvaluateTaskDTO());
+        model.addAttribute("submitAllowed", Objects.equals(taskRetrieved.getState().toString(),
+                "NON_SOUMIS") || Objects.equals(taskRetrieved.getState().toString(), "NON_RESOLU"));
+        if(bindingResult.hasErrors()){
+            var allComments = commentRepository.findByTaskOrderByPubDateDesc(taskRetrieved);
+            model.addAttribute("comments", allComments);
+            return "taskTemplates/viewTask";
+        }
+
+        this.taskService.saveComment(newCommentDTO.getTaskId(),newCommentDTO.getAuthorComment(),newCommentDTO.getContent());
+        var allComments = commentRepository.findByTaskOrderByPubDateDesc(taskRetrieved);
+        model.addAttribute("comments", allComments);
+        log.info("ProjectController :: addNewComment execution ended");
+        return "taskTemplates/viewTask";
     }
 }

@@ -47,6 +47,23 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public Page<ProjectEntity> getMyProjectList(int page, int size, String email) {
+        Page<ProjectEntity> projectList = null;
+        try {
+            log.info("ProjectServiceImpl:getProjectList execution started.");
+            projectList = projectRepository.findProjectsByTitleAndMember(email, PageRequest.of(page, size));
+            if (projectList.isEmpty()) {
+                projectList = Page.empty();
+            }
+        } catch (Exception ex) {
+            log.error("Exception occurred while retrieving projects from database , Exception message {}", ex.getMessage());
+            throw new ProjectServiceBusinessException("Exception occurred while fetch all projects from Database");
+        }
+        log.info("ProjectServiceImpl:getProducts execution ended.");
+        return projectList;
+    }
+
+    @Override
     public Optional<ProjectEntity> getProject(Long projectId) {
         ProjectEntity project = null;
         try {
@@ -160,4 +177,44 @@ public class ProjectServiceImpl implements ProjectService {
         return project.getMembers().contains(employee);
     }
 
+    @Override
+    public List<TaskEntity> getTasksByProjectByExecutor(Long projectId, String email) {
+        ProjectEntity project = null;
+        List<TaskEntity> taskList = new ArrayList<>();
+        try {
+            project = this.getProject(projectId).get();
+            //taskList = project.getTasks().stream().filter(task->task.getResponsable().getEmail().equals(email)).toList();
+            for (TaskEntity task : project.getTasks()) {
+                if (task.getResponsable() != null) {
+                    if (task.getResponsable().getEmail().equals(email)) {
+                        taskList.add(task);
+                    }
+                }
+            }
+            if (taskList.isEmpty())
+                taskList = Collections.emptyList();
+        } catch (Exception ex) {
+            throw new ProjectServiceBusinessException("Exception occured while processing tasks by project by executor");
+        }
+        return taskList;
+    }
+
+    @Override
+    public void retirerMembre(Long projectId, String memberEmail) {
+        log.info("ProjectServiceImpl:retirerMembre execution started.");
+        try {
+            Optional<ProjectEntity> project = this.projectRepository.findById(projectId);
+            if (project.isEmpty())
+                throw new ProjectServiceBusinessException("Le projet est introuvable.");
+            EmployeEntity memberToRemove = this.employeService.loadEmployeByEmail(memberEmail);
+            if (memberToRemove == null) {
+                throw new ProjectServiceBusinessException("Ce membre n'existe pas. ");
+            }
+            project.get().getMembers().remove(memberToRemove);
+
+        } catch (Exception ex) {
+            log.error("Error while processing retirerMembre");
+            throw new ProjectServiceBusinessException("Exeception occurred during the operation");
+        }
+    }
 }

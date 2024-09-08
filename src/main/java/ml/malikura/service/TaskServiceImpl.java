@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.malikura.dto.EditTaskDTO;
 import ml.malikura.dto.EvaluateTaskDTO;
+import ml.malikura.dto.NewCommentDTO;
 import ml.malikura.dto.NewTaskDTO;
+import ml.malikura.entity.CommentEntity;
 import ml.malikura.entity.EmployeEntity;
 import ml.malikura.entity.ProjectEntity;
 import ml.malikura.entity.TaskEntity;
 import ml.malikura.exception.ProjectServiceBusinessException;
+import ml.malikura.repository.CommentRepository;
 import ml.malikura.repository.TaskRepository;
 import ml.malikura.util.ResolutionEnum;
 import ml.malikura.util.TaskState;
@@ -19,16 +22,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
 @AllArgsConstructor
 @Slf4j
 public class TaskServiceImpl implements TaskService {
-    TaskRepository taskRepository;
-    ProjectService projectService;
-    EmployeService employeService;
+    private TaskRepository taskRepository;
+    private ProjectService projectService;
+    private EmployeService employeService;
+    private CommentRepository commentRepository;
 
     @Override
     public TaskEntity saveNewTask(NewTaskDTO newTaskDTO) {
@@ -114,31 +118,43 @@ public class TaskServiceImpl implements TaskService {
                 throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
             }
             TaskEntity taskNewValues = ValueMapper.convertToEntity(editTaskDTO);
-            if (editTaskDTO.getResponsableId() != null)
+            if (editTaskDTO.getResponsableId() != null) {
                 taskExecutor = employeService.loadEmployeByEmail(editTaskDTO.getResponsableId());
+                taskNewValues.setAffectationDate(LocalDateTime.now());
+            }
             // set executor
             taskNewValues.setResponsable(taskExecutor);
+            // set the associated project
             taskNewValues.setProject(associatedProject);
             // set author
             taskNewValues.setAuthor(taskToUpdate.getAuthor());
+            // set creation date
             taskNewValues.setCreationDate(taskToUpdate.getCreationDate());
-            //taskToUpdate = taskNewValues;
+
             taskRepository.save(taskNewValues);
         } catch (Exception ex) {
             log.error("Exception occurred while updating project to database , Exception message {}", ex.getMessage());
-            throw new ProjectServiceBusinessException(ex.getMessage());
+            throw new ProjectServiceBusinessException("Exception occurred while updating project to database");
         }
         log.info("TaskServiceImpl:updateTask execution ended");
     }
 
+    //Task submission logic
     @Override
     public void onTaskSubmit(Long taskId) {
-        TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
-        if (taskEntity == null) {
-            throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+        log.info("TaskServiceImpl:onTaskSubmit execution started.");
+        try {
+            TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
+            if (taskEntity == null) {
+                throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+            }
+            taskEntity.setState(TaskState.SOUMIS);
+            taskRepository.save(taskEntity);
+        } catch (Exception ex) {
+            log.error("Exception occurred while submitting the task ");
+            throw new ProjectServiceBusinessException("Exception occurred while submitting the task");
         }
-        taskEntity.setState(TaskState.SOUMIS);
-        taskRepository.save(taskEntity);
+        log.info("TaskServiceImpl:onTaskSubmit execution ended.");
     }
 
     @Override
@@ -152,37 +168,106 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void evaluateTask(EvaluateTaskDTO evaluateTaskDTO, Long taskId) {
-        TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
-        if (taskEntity == null) {
-            throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+    public Page<TaskEntity> getMyTasks(String email,int page, int size) {
+        log.info("TaskServiceImpl:getMyTasks execution started.");
+        Page<TaskEntity> myProjects = null;
+        try {
+            myProjects = taskRepository.findByExecutorEmail(email,PageRequest.of(page,size));
+            if(myProjects.isEmpty())
+            {
+                myProjects = Page.empty();
+            }
+        }catch (Exception ex){
+            log.error("Exception occurred while retrieving tasks from database , Exception message {}", ex.getMessage());
+            throw new ProjectServiceBusinessException("Exception occurred while fetch all projects from Database");
         }
-        taskEntity.setTaskEvaluation(evaluateTaskDTO.getTaskEvaluation());
-        taskEntity.setMark(evaluateTaskDTO.getMark());
-        taskRepository.save(taskEntity);
+        log.info("TaskServiceImpl:getMyTasks execution ended.");
+        return myProjects;
     }
 
+    // Task evaluation logic
+    @Override
+    public void evaluateTask(EvaluateTaskDTO evaluateTaskDTO, Long taskId) {
+        log.info("TaskServiceImpl:evaluateTask execution started.");
+        try {
+            TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
+            if (taskEntity == null) {
+                throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+            }
+            taskEntity.setTaskEvaluation(evaluateTaskDTO.getTaskEvaluation());
+            taskEntity.setMark(evaluateTaskDTO.getMark());
+            taskRepository.save(taskEntity);
+        } catch (Exception ex) {
+            log.error("Exception occurred while evaluating the task ");
+            throw new ProjectServiceBusinessException("Exception occurred while evaluating the task ");
+        }
+        log.info("TaskServiceImpl:evaluateTask execution ended.");
+    }
+
+    // Task solving logic
     @Override
     public void solveTask(Long taskId, String proposition) {
-        TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
-        if (taskEntity == null) {
-            throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+        log.info("TaskServiceImpl:solveTask execution started.");
+        try {
+            TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
+            if (taskEntity == null) {
+                throw new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.");
+            }
+            if (proposition.equals(String.valueOf(ResolutionEnum.CLOTURE))) {
+                taskEntity.setState(TaskState.RESOLU);
+            } else {
+                taskEntity.setState(TaskState.NON_RESOLU);
+            }
+            taskRepository.save(taskEntity);
+        } catch (Exception ex) {
+            log.error("Exception occurred while solving the task ");
+            throw new ProjectServiceBusinessException("Exception occurred while solving the task ");
         }
-        if (proposition.equals(String.valueOf(ResolutionEnum.CLOTURE))) {
-            taskEntity.setState(TaskState.RESOLU);
-        } else {
-            taskEntity.setState(TaskState.NON_RESOLU);
-        }
-        taskRepository.save(taskEntity);
+        log.info("TaskServiceImpl:solveTask execution ended.");
     }
 
     @Override
     public void deleteTaskById(Long taskId) {
         log.info("TaskServiceImpl : deleteTaskById execution started.");
-        taskRepository.findById(taskId).orElseThrow(
-                () -> new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.")
-        );
-        taskRepository.deleteById(taskId);
+        try {
+            taskRepository.findById(taskId).orElseThrow(
+                    () -> new ProjectServiceBusinessException("Cette tâche est introuvable dans la base de données.")
+            );
+            taskRepository.deleteById(taskId);
+        } catch (Exception ex) {
+            log.error("Exception occurred while deleting the task ");
+            throw new ProjectServiceBusinessException("Exception occurred while deleting the task");
+        }
         log.info("TaskServiceImpl : deleteTaskById execution ended.");
     }
+
+    @Override
+    public void saveComment(Long taskId,String authorComment, String content) {
+        CommentEntity newComment = new CommentEntity();
+        log.info("TaskServiceImpl : saveComment execution started.");
+        try {
+            EmployeEntity commentAuth = employeService.loadEmployeByEmail(authorComment);
+            TaskEntity associatedTask = this.getTask(taskId);
+
+            newComment.setPubDate(LocalDateTime.now());
+            newComment.setContent(content);
+            newComment.setAuthor(commentAuth);
+            newComment.setTask(associatedTask);
+            commentRepository.save(newComment);
+
+        } catch (Exception ex) {
+            log.error("Exception occurred while saving new comment.");
+            throw new ProjectServiceBusinessException("Exception occurred while saving new comment.");
+        }
+        log.info("TaskServiceImpl : saveComment execution ended.");
+    }
+
+    @Override
+    public boolean isExecutorOfTask(String email, Long taskId) {
+        TaskEntity taskEntity = getTask(taskId);
+        if (taskEntity.getResponsable() == null)
+            return false;
+        return Objects.equals(taskEntity.getResponsable().getEmail(), email);
+    }
+
 }

@@ -14,6 +14,7 @@ import java.util.Set;
 public interface ProjectService {
 
     public Page<ProjectEntity> getProjectList(String keyword, int page, int size);
+    public Page<ProjectEntity> getMyProjectList( int page, int size,String email);
 
     public Optional<ProjectEntity> getProject(Long projectId);
 
@@ -30,4 +31,8 @@ public interface ProjectService {
     void addNewEmployeToProject(String email, Long projectId);
 
     boolean isMemberOfProject(String email, Long projectId);
+
+    public List<TaskEntity> getTasksByProjectByExecutor(Long projectId, String email);
+
+    void retirerMembre(Long projectId, String memberEmail);
 }

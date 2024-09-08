@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="./layoutTemplates/layout">
+      layout:decorate="./layoutTemplates/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <meta charset="UTF-8">
     <title>Détail de la tâche</title>
@@ -12,8 +13,9 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
-                                           th:text="${projectName}"></a></li>
+            <li class="breadcrumb-item"><a
+                    th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"
+                    th:text="${projectName}"></a></li>
             <li class="breadcrumb-item"><a
                     th:href="@{/getProjectTasks(projectId=${projectId},projectName=${projectName})}">Liste des
                 tâches</a></li>
@@ -29,12 +31,12 @@
                             class="btn btn-secondary m-2" type="button" title="Soumettre"
                             th:href="@{/submitTask(taskId=${task.id})}"
                             onclick="javascript:return confirm('Êtes-vous sûre de soumettre?')">Soumettre</a></span>
-                    <a class="btn btn-secondary m-2" type="button" title="Modifier"
+                    <a sec:authorize="hasRole('ROLE_MANAGER')" class="btn btn-secondary m-2" type="button" title="Modifier"
                        th:href="@{/editTaskFrom(taskId=${task.id})}">Modifier</a>
-                    <button class="btn btn-secondary m-2" type="button" title="Evaluer" data-bs-toggle="modal"
+                    <button sec:authorize="hasRole('ROLE_MANAGER')" class="btn btn-secondary m-2" type="button" title="Evaluer" data-bs-toggle="modal"
                             data-bs-target="#staticBackdrop">Evaluer
                     </button>
-                    <button class="btn btn-secondary m-2" type="button" title="Résoudre" data-bs-toggle="modal"
+                    <button th:if="${resolveAllowed}" sec:authorize="hasRole('ROLE_MANAGER')" class="btn btn-secondary m-2" type="button" title="Résoudre" data-bs-toggle="modal"
                             data-bs-target="#staticBackdrop1">Résoudre
                     </button>
                 </div>
@@ -135,18 +137,21 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="fs-5"><span class="fw-bold">Auteur : </span>
-                        <span class="text-muted" th:if="task.author != null" th:text="${task.author.firstname +' '+task.author.name}"></span>
+                        <span class="text-muted" th:if="task.author != null"
+                              th:text="${task.author.firstname +' '+task.author.name}"></span>
                         <span class="text-muted" th:unless="task.author != null">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Affectée : </span>
-                        <span th:if="${task.responsable != null}" class="text-muted" th:text="${task.responsable.firstname +' '+task.responsable.name }"></span>
+                        <span th:if="${task.responsable != null}" class="text-muted"
+                              th:text="${task.responsable.firstname +' '+task.responsable.name }"></span>
                         <span th:unless="${task.responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de création : </span>
                         <span class="text-muted" th:text="${task.creationDate}"></span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date d'affectation : </span>
-                        <span th:if="${task.responsable != null}" class="text-muted" th:text="${task.affectationDate}"></span>
+                        <span th:if="${task.responsable != null}" class="text-muted"
+                              th:text="${task.affectationDate}"></span>
                         <span th:unless="${task.responsable != null}" class="text-muted">--</span>
                     </div>
                     <div class="fs-5"><span class="fw-bold">Date de début : </span>
@@ -173,53 +178,41 @@
                     <div class="mesgs">
                         <div class="type_msg">
                             <div class="input_msg_write">
-                                <input type="text" class="write_msg" placeholder="Type a message"/>
-                                <button class="msg_send_btn" type="button"><i class="bi bi-send"></i></button>
+                                <form th:action="@{/addNewComment}" th:method="post">
+                                    <input type="text" name="content" class="write_msg" placeholder="Type a message"
+                                           required/>
+                                    <span class="text-danger" th:errors="${newCommentDTO.content}"></span>
+                                    <input type="hidden" name="authorComment" th:value="${#authentication.name}">
+                                    <input type="hidden" name="taskId" th:value="${task.id}">
+                                    <button class="msg_send_btn" type="submit"><i class="bi bi-send"></i></button>
+                                </form>
                             </div>
                         </div>
-                        <div class="msg_history">
-                            <div class="incoming_msg">
-                                <div class="incoming_msg_img"><img
-                                        src="https://ptetutorials.com/images/user-profile.png"
-                                        alt="sunil"></div>
-                                <div class="received_msg">
-                                    <div class="received_withd_msg">
-                                        <p>Test which is a new approach to have all
-                                            solutions</p>
-                                        <span class="time_date"> 11:01 AM    |    June 9</span></div>
+                        <div class="msg_history" th:if="${comments!=null}">
+                            <div th:each="comment:${comments}">
+                                <div th:if="${#authentication.principal.username == comment.author.email}">
+                                    <div class="outgoing_msg">
+                                        <div class="sent_msg">
+                                            <span class="time_date" th:text="${comment.author.firstname+'(vous)'}"></span>
+                                            <p th:text="${comment.content}"></p>
+                                            <span class="time_date" th:text="${comment.pubDate}"></span>
+                                        </div>
+                                        <!--<span class="time_date"> 11:01 AM    |    June 9</span>-->
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="outgoing_msg">
-                                <div class="sent_msg">
-                                    <p>Test which is a new approach to have all
-                                        solutions</p>
-                                    <span class="time_date"> 11:01 AM    |    June 9</span></div>
-                            </div>
-                            <div class="incoming_msg">
-                                <div class="incoming_msg_img"><img
-                                        src="https://ptetutorials.com/images/user-profile.png"
-                                        alt="sunil"></div>
-                                <div class="received_msg">
-                                    <div class="received_withd_msg">
-                                        <p>Test, which is a new approach to have</p>
-                                        <span class="time_date"> 11:01 AM    |    Yesterday</span></div>
-                                </div>
-                            </div>
-                            <div class="outgoing_msg">
-                                <div class="sent_msg">
-                                    <p>Apollo University, Delhi, India Test</p>
-                                    <span class="time_date"> 11:01 AM    |    Today</span></div>
-                            </div>
-                            <div class="incoming_msg">
-                                <div class="incoming_msg_img"><img
-                                        src="https://ptetutorials.com/images/user-profile.png"
-                                        alt="sunil"></div>
-                                <div class="received_msg">
-                                    <div class="received_withd_msg">
-                                        <p>We work directly with our designers and suppliers,
-                                            and sell direct to you, which means quality, exclusive
-                                            products, at a price anyone can afford.</p>
-                                        <span class="time_date"> 11:01 AM    |    Today</span></div>
+                                <div th:unless="${#authentication.principal.username == comment.author.email}">
+                                    <div class="incoming_msg">
+                                        <div class="incoming_msg_img">
+                                            <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
+                                            <span class="time_date" th:text="${comment.author.firstname}"></span>
+                                        </div>
+                                        <div class="received_msg">
+                                            <div class="received_withd_msg">
+                                                <p th:text="${comment.content}"></p>
+                                                <span class="time_date" th:text="${comment.pubDate}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

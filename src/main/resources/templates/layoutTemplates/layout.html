@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -46,17 +47,26 @@
                                     bord</span> </a>
                     </li>
                     <li>
-                        <a th:href="@{/projets}" class="nav-link px-0 align-middle">
+                        <a th:href="@{/projets}" class="nav-link px-0 align-middle"
+                        th:if="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
                             <i class="fs-4 bi-share"></i> <span class="ms-1 d-none d-sm-inline">Projets</span></a>
+                        <a th:href="@{/projets}" class="nav-link px-0 align-middle"
+                           th:unless="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
+                            <i class="fs-4 bi-share"></i> <span class="ms-1 d-none d-sm-inline">Mes Projets</span></a>
                     </li>
                     <li>
-                        <a th:href="@{/employes}" class="nav-link px-0 align-middle">
+                        <a sec:authorize="hasRole('MANAGER')" th:href="@{/employes}" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Employes</span>
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/tasks}" class="nav-link px-0 align-middle">
+                        <a th:href="@{/tasks}" class="nav-link px-0 align-middle"
+                           th:if="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
                             <i class="fs-4 bi-list-check"></i> <span class="ms-1 d-none d-sm-inline">Tâches</span>
+                        </a>
+                        <a th:href="@{/tasks}" class="nav-link px-0 align-middle"
+                           th:unless="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
+                            <i class="fs-4 bi-list-check"></i> <span class="ms-1 d-none d-sm-inline">Mes tâches</span>
                         </a>
                     </li>
                 </ul>

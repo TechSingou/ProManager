@@ -1,10 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="./layoutTemplates/layout"
+>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
-
+    <div layout:fragment="myContent">
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"><span th:text="${projectName}"></span></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Statistiques</li>
+            </ol>
+        </nav>
+        <div class="col-md-6 offset-3 mt-5 border border-info-subtle card p-3 rounded">
+            <div class="navbar-brand"><small>Total tâches :<span th:text="${totalTasks}"></span></small></div>
+            <div class="navbar-brand"><small>Total membres : <span th:text="${totalMembers}"></span></small>
+            </div>
+            <div class="navbar-brand"><small>Note moyenne : <span th:text="${noteMoyenne}"></span> </small>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

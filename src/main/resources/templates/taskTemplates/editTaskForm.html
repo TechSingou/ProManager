@@ -12,7 +12,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/index}">Promanager</a></li>
             <li class="breadcrumb-item"><a th:href="@{/projets}">Projets</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId})}"
+            <li class="breadcrumb-item"><a th:href="@{/viewProject(projectId=${projectId},email=${#authentication.name})}"
                                            th:text="${projectName}"></a>
             </li>
             <li class="breadcrumb-item"><a

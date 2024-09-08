@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="./layoutTemplates/layout">
+      layout:decorate="./layoutTemplates/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
     <meta charset="UTF-8">
     <title>List des employés</title>
@@ -23,7 +24,7 @@
                            aria-label="Search" name="keyword" th:value="${currentKeyword}">
                     <button class="btn btn-outline-primary" type="submit">chercher</button>
                 </form>
-                <div class="d-flex">
+                <div class="d-flex" sec:authorize="hasRole('ADMIN')">
                     <a class="btn btn-outline-success" th:href="@{/newEmployeeForm}"><i class="bi bi-plus-lg"></i>Nouveau
                         collaborateur</a>
                 </div>
@@ -39,7 +40,7 @@
                 <th scope="col">Adresse</th>
                 <th scope="col">Téléphone</th>
                 <th scope="col">Etat compte</th>
-                <th scope="col">Action</th>
+                <th sec:authorize="hasRole('ADMIN')" scope="col">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -60,7 +61,7 @@
                 <td th:text="${employee.telephone}"></td>
                 <td><span th:if="${employee.accountEnabled == true}">ACTIF</span> <span
                         th:if="${employee.accountEnabled == false}">INACTIF</span></td>
-                <td>
+                <td sec:authorize="hasRole('ADMIN')">
                     <span th:if="${#authentication.principal.username == employee.email}">
                         <a class="btn btn-success disabled" th:if="${employee.accountEnabled == false}"
                            th:href="@{/getActivateAccountForm(email=${employee.email},keyword=${keyword},page=${currentPage})}">Activer</a>

@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountActivationDTO {
-    @NotEmpty(message = "Au moins un rôle doit être choisit") String[] roles;
+    @NotEmpty(message = "Le role est obligatoire") String role;
 }

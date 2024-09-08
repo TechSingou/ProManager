@@ -12,8 +12,8 @@ import java.util.Set;
 
 @Entity(name = "PROJECTS")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProjectEntity {
 
     @Id

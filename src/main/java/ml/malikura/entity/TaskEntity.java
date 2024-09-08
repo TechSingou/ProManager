@@ -10,6 +10,7 @@ import ml.malikura.util.TaskState;
 import ml.malikura.util.TaskStatut;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "TASKS")
 @Data
@@ -44,5 +45,8 @@ public class TaskEntity {
     @ManyToOne
     @JoinColumn(name = "project_id")
     private ProjectEntity project;
+
+//    @OneToMany(mappedBy = "task",fetch = FetchType.LAZY)
+//    private List<CommentEntity> comments;
 
 }

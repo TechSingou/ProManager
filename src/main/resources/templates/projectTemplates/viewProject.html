@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="./layoutTemplates/layout">
+      layout:decorate="./layoutTemplates/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
 <head>
-    <meta charset="UTF-8">
+    <meta charset=" UTF-8">
     <title>Détail du projet</title>
 </head>
 <body>
@@ -38,13 +39,34 @@
             <h6>Description :</h6>
             <div th:text="${project.description}"></div>
         </div>
-        <a class="btn btn-outline-primary"
-           th:href="@{/getProjectTasks(projectId=${project.id},projectName=${project.title})}"><i
-                class="fs-4 bi-list-check"></i> Liste de tâches</a>
-        <a class="btn btn-outline-success"
-           th:href="@{/viewProjectMembersList(projectId=${project.id},projectName=${project.title})}"><i
-                class="fs-4 bi-people"></i> Liste de membres</a>
-        <button class="btn btn-outline-secondary"><i class="fs-4 bi-graph-up"></i> Statistiques du projet</button>
+        <div th:if="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
+            <a class="btn btn-outline-primary"
+               th:href="@{/getProjectTasks(projectId=${project.id},projectName=${project.title})}"><i
+                    class="fs-4 bi-list-check"></i> Liste de tâches</a>
+            <a class="btn btn-outline-success"
+               th:href="@{/viewProjectMembersList(projectId=${project.id},projectName=${project.title})}"><i
+                    class="fs-4 bi-people"></i> Liste de membres</a>
+            <a class="btn btn-outline-secondary" th:href="@{/viewStat(projectId=${project.id})}">
+                <i class="fs-4 bi-graph-up"></i>
+                Statistiques du projet</a>
+        </div>
+        <div th:unless="${#authorization.expression('hasRole(''MANAGER'')') || #authorization.expression('hasRole(''ADMIN'')')}">
+            <h4 class="navbar-brand">Mes tâches dans ce projet</h4>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="task:${myTasks}">
+                    <td><a th:href="@{/viewTask(taskId=${task.id})}" th:text="${task.title}"></a></td>
+                    <td th:text="${task.description}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
